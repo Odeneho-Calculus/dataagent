@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c3d66;
+
+  --color-accent-50: #fff7ed;
+  --color-accent-100: #ffedd5;
+  --color-accent-200: #fed7aa;
+  --color-accent-300: #fdba74;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #f97316;
+  --color-accent-600: #ea580c;
+  --color-accent-700: #c2410c;
+  --color-accent-800: #9a3412;
+  --color-accent-900: #7c2d12;
+}
+
+@layer base {
+  :root {
+    --bg-primary: white;
+    --bg-secondary: #f8fafc;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+  }
+
+  html.dark {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --border-color: #334155;
+  }
+
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+  }
+
+  a {
+    color: #0ea5e9;
+  }
+
+  a:hover {
+    color: #0284c7;
+  }
+
+  html.dark a:hover {
+    color: #38bdf8;
+  }
+
+  p {
+    color: var(--text-secondary);
+  }
+
+  label {
+    color: var(--text-secondary);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    color: white;
+    background-color: #0ea5e9;
+  }
+
+  .btn-primary:hover {
+    background-color: #0284c7;
+  }
+
+  .btn-primary:active {
+    background-color: #0369a1;
+  }
+
+  .btn-secondary {
+    color: white;
+    background-color: #334155;
+  }
+
+  .btn-secondary:hover {
+    background-color: #475569;
+  }
+
+  .btn-secondary:active {
+    background-color: #64748b;
+  }
+
+  .btn-ghost {
+    color: var(--text-primary);
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--bg-secondary);
+  }
+
+  .btn-ghost:active {
+    background-color: var(--bg-secondary);
+  }
+
+  .btn-danger {
+    @apply bg-red-500 hover:bg-red-600 active:bg-red-700 text-white;
+  }
+
+  .btn-success {
+    @apply bg-green-500 hover:bg-green-600 active:bg-green-700 text-white;
+  }
+
+  .card {
+    @apply rounded-lg shadow-sm hover:shadow-md transition-shadow;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  .card-elevated {
+    @apply rounded-lg shadow-md hover:shadow-lg transition-shadow;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .input-field::placeholder {
+    color: var(--text-secondary);
+  }
+
+  .input-field:disabled {
+    @apply cursor-not-allowed opacity-50;
+    background-color: var(--bg-secondary);
+  }
+
+  .label {
+    @apply block text-sm font-medium mb-2;
+    color: var(--text-primary);
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  .badge-primary {
+    background-color: #f0f9ff;
+    color: #0c3d66;
+  }
+
+  html.dark .badge-primary {
+    background-color: #0c3d66;
+    color: #f0f9ff;
+  }
+
+  .badge-accent {
+    background-color: #fff7ed;
+    color: #7c2d12;
+  }
+
+  html.dark .badge-accent {
+    background-color: #7c2d12;
+    color: #fff7ed;
+  }
+
+  .text-muted {
+    color: var(--text-secondary);
+  }
+
+  .text-light {
+    color: var(--text-secondary);
+  }
+
+  .divider {
+    border-top: 1px solid var(--border-color);
+  }
+
+  .backdrop-blur-lg {
+    @apply backdrop-blur-lg;
+  }
+}
