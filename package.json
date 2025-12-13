@@ -5,10 +5,10 @@
   "main": "backend/src/server.js",
   "scripts": {
     "dev": "concurrently \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
-    "build": "npm --prefix backend run build && npm --prefix frontend run build",
-    "start": "npm --prefix frontend run build && npm --prefix backend start",
+    "build": "npm --prefix frontend run build && npm --prefix backend run build",
+    "start": "npm --prefix backend start",
     "test": "npm --prefix backend test && npm --prefix frontend test",
-    "postinstall": "npm --prefix backend install && npm --prefix frontend install"
+    "postinstall": "npm --prefix backend install && npm --prefix frontend install --legacy-peer-deps && npm --prefix frontend run build"
   },
   "keywords": ["data", "bundle", "reseller", "mtn", "telecel", "airteltigo"],
   "author": "",
