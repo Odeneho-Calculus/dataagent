@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/database');
 
@@ -21,6 +22,12 @@ app.use('/api/purchases', require('./routes/purchases'));
 
 app.get('/health', (req, res) => {
   res.json({ success: true, message: 'Server is running' });
+});
+
+app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
 });
 
 app.use((err, req, res, next) => {
