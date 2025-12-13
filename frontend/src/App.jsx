@@ -7,6 +7,10 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import BuyData from './pages/BuyData';
+import Transactions from './pages/Transactions';
+import TopUp from './pages/TopUp';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -23,6 +27,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/buy-data"
+              element={
+                <ProtectedRoute>
+                  <BuyData />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/transactions"
+              element={
+                <ProtectedRoute>
+                  <Transactions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/topup"
+              element={
+                <ProtectedRoute>
+                  <TopUp />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />
