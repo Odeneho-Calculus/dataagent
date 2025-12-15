@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: highest-data-hub
+    runtime: node
+    region: oregon
+    buildCommand: npm install && npm --prefix backend install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
