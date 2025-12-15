@@ -7,7 +7,11 @@
     "dev": "nodemon",
     "start": "node src/server.js",
     "build": "npm run lint",
-    "lint": "eslint src/ --fix"
+    "lint": "eslint src/ --fix",
+    "create-admin": "node scripts/createAdmin.js",
+    "make-admin": "node scripts/makeAdmin.js",
+    "change-role": "node scripts/changeRole.js",
+    "list-users": "node scripts/listUsers.js"
   },
   "keywords": ["api", "express", "mongodb", "jwt"],
   "author": "",

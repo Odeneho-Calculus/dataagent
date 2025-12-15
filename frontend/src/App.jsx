@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -11,6 +12,11 @@ import BuyData from './pages/BuyData';
 import Transactions from './pages/Transactions';
 import TopUp from './pages/TopUp';
 import Profile from './pages/Profile';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminDataPlans from './pages/AdminDataPlans';
+import AdminTransactions from './pages/AdminTransactions';
+import AdminPurchases from './pages/AdminPurchases';
 
 function App() {
   return (
@@ -60,6 +66,46 @@ function App() {
                 <ProtectedRoute>
                   <Profile />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDashboard />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminProtectedRoute>
+                  <AdminUsers />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/dataplans"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDataPlans />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/transactions"
+              element={
+                <AdminProtectedRoute>
+                  <AdminTransactions />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/purchases"
+              element={
+                <AdminProtectedRoute>
+                  <AdminPurchases />
+                </AdminProtectedRoute>
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />

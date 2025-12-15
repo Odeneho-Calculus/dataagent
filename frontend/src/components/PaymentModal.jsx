@@ -1,0 +1,120 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
+import { wallet } from '../services/api';
+
+export default function PaymentModal({ isOpen, onClose, accessCode, reference, amount, onSuccess }) {
+  const [status, setStatus] = useState('pending');
+  const [error, setError] = useState(null);
+  const paystackRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen || !accessCode) return;
+
+    const initializePayment = async () => {
+      try {
+        if (window.PaystackPop) {
+          paystackRef.current = new window.PaystackPop();
+          
+          paystackRef.current.resumeTransaction(accessCode, {
+            onSuccess: async () => {
+              setStatus('verifying');
+              try {
+                const result = await wallet.verifyPayment({ reference });
+                
+                if (result.success && result.transaction.status === 'completed') {
+                  setStatus('success');
+                  setTimeout(() => {
+                    onSuccess(result);
+                    onClose();
+                  }, 2000);
+                } else {
+                  setStatus('failed');
+                  setError('Payment verification failed');
+                }
+              } catch (err) {
+                setStatus('failed');
+                setError(err.message || 'Payment verification failed');
+              }
+            },
+            onCancel: () => {
+              setStatus('cancelled');
+            },
+            onError: (error) => {
+              setStatus('failed');
+              setError(error?.message || 'Payment error occurred');
+            },
+          });
+        } else {
+          setStatus('failed');
+          setError('Paystack library not loaded. Please refresh the page.');
+        }
+      } catch (err) {
+        setStatus('failed');
+        setError(err.message || 'Failed to initialize payment');
+      }
+    };
+
+    initializePayment();
+
+    return () => {
+      if (paystackRef.current?.cancelTransaction) {
+        paystackRef.current.cancelTransaction(reference);
+      }
+    };
+  }, [isOpen, accessCode, reference, onClose, onSuccess]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+      {status === 'success' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+            <div className="flex flex-col items-center justify-center text-center">
+              <CheckCircle size={64} className="text-green-500 mb-4" />
+              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Payment Successful!</h3>
+              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>Your wallet has been credited with GHS {amount.toFixed(2)}</p>
+              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Reference: {reference}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {status === 'cancelled' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+            <div className="flex flex-col items-center justify-center text-center">
+              <AlertCircle size={64} className="text-yellow-500 mb-4" />
+              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Payment Cancelled</h3>
+              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>You cancelled the payment. Your wallet was not updated.</p>
+              <button
+                onClick={onClose}
+                className="mt-4 btn btn-primary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {status === 'failed' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+            <div className="flex flex-col items-center justify-center text-center">
+              <AlertCircle size={64} className="text-red-500 mb-4" />
+              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Payment Failed</h3>
+              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>{ error || 'Unable to process your payment'}</p>
+              <button
+                onClick={onClose}
+                className="mt-4 btn btn-primary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

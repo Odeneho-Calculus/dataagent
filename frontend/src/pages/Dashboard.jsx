@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Copy, TrendingUp, Clock, Zap } from 'lucide-react';
+import { dataplans } from '../services/api';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [dataBundles, setDataBundles] = useState([]);
+  const [loadingBundles, setLoadingBundles] = useState(true);
+
+  useEffect(() => {
+    fetchActiveBundles();
+  }, []);
+
+  const fetchActiveBundles = async () => {
+    try {
+      const response = await dataplans.list('', 'active');
+      if (response.success && response.plans) {
+        setDataBundles(response.plans.slice(0, 6));
+      }
+    } catch (err) {
+      console.error('Failed to fetch bundles:', err);
+    } finally {
+      setLoadingBundles(false);
+    }
+  };
 
   const copyReferralCode = () => {
     if (user?.referralCode) {
@@ -14,15 +34,6 @@ export default function Dashboard() {
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
-  const dataBundles = [
-    { id: 1, name: 'Lite', size: '100MB', price: 'GHS 0.99', network: 'MTN' },
-    { id: 2, name: 'Basic', size: '500MB', price: 'GHS 2.99', network: 'MTN' },
-    { id: 3, name: 'Standard', size: '1GB', price: 'GHS 4.99', network: 'MTN' },
-    { id: 4, name: 'Plus', size: '2GB', price: 'GHS 8.99', network: 'Vodafone' },
-    { id: 5, name: 'Pro', size: '5GB', price: 'GHS 19.99', network: 'Vodafone' },
-    { id: 6, name: 'Max', size: '10GB', price: 'GHS 34.99', network: 'AirtelTigo' },
-  ];
 
   const recentTransactions = [
     { id: 1, type: 'Data Purchase', amount: '-GHS 4.99', date: '2 hours ago', status: 'Completed' },
@@ -98,25 +109,36 @@ export default function Dashboard() {
                   Buy Now
                 </Link>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {dataBundles.map(bundle => (
-                  <div key={bundle.id} className="p-4 rounded-lg" style={{backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'}}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-bold">{bundle.name}</h3>
-                        <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{bundle.size}</p>
+              {loadingBundles ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
+                  <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Loading available bundles...</p>
+                </div>
+              ) : dataBundles.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-sm" style={{color: 'var(--text-secondary)'}}>No active data plans available</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {dataBundles.map(bundle => (
+                    <div key={bundle._id} className="p-4 rounded-lg" style={{backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'}}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="font-bold">{bundle.planName}</h3>
+                          <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{bundle.dataSize}</p>
+                        </div>
+                        <span className="text-xs px-2 py-1 rounded" style={{backgroundColor: 'var(--primary-600)', color: 'white'}}>
+                          {bundle.network}
+                        </span>
                       </div>
-                      <span className="text-xs px-2 py-1 rounded" style={{backgroundColor: 'var(--primary-600)', color: 'white'}}>
-                        {bundle.network}
-                      </span>
+                      <div className="flex justify-between items-center">
+                        <p className="font-bold text-primary-600">GHS {bundle.sellingPrice.toFixed(2)}</p>
+                        <Link to="/buy-data" className="btn btn-secondary text-xs">Get</Link>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <p className="font-bold text-primary-600">{bundle.price}</p>
-                      <button className="btn btn-secondary text-xs">Get</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

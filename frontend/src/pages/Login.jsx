@@ -23,8 +23,12 @@ export default function Login() {
         return;
       }
 
-      await login(email, password);
-      navigate('/');
+      const data = await login(email, password);
+      if (data.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {

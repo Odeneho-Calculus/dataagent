@@ -37,6 +37,7 @@ exports.register = async (req, res) => {
         email: user.email,
         name: user.name,
         balance: user.balance,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -84,6 +85,7 @@ exports.login = async (req, res) => {
         email: user.email,
         name: user.name,
         balance: user.balance,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -106,6 +108,7 @@ exports.getProfile = async (req, res) => {
         phone: user.phone,
         balance: user.balance,
         referralCode: user.referralCode,
+        role: user.role,
       },
     });
   } catch (error) {

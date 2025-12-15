@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { Download, Filter } from 'lucide-react';
 
 export default function Transactions() {
-  const { user } = useAuth();
   const [filter, setFilter] = useState('all');
 
   const transactions = [

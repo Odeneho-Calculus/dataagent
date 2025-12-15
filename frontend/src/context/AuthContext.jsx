@@ -31,14 +31,16 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, name) => {
     const data = await authAPI.register({ email, password, name });
     localStorage.setItem('token', data.token);
-    setUser(data.user);
+    const userWithRole = { ...data.user, role: data.user.role || 'user' };
+    setUser(userWithRole);
     return data;
   };
 
   const login = async (email, password) => {
     const data = await authAPI.login({ email, password });
     localStorage.setItem('token', data.token);
-    setUser(data.user);
+    const userWithRole = { ...data.user, role: data.user.role || 'user' };
+    setUser(userWithRole);
     return data;
   };
 
@@ -52,7 +54,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, register, login, logout, updateBalance, fetchProfile }}>
+    <AuthContext.Provider value={{ user, loading, register, login, logout, updateBalance, fetchProfile, refreshUser: fetchProfile }}>
       {children}
     </AuthContext.Provider>
   );

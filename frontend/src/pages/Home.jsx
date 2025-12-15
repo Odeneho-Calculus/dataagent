@@ -1,24 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { dataplans } from '../services/api';
 
 export default function Home() {
   const { user } = useAuth();
+  const [plans, setPlans] = useState([]);
+  const [networks, setNetworks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const networks = [
-    { name: 'MTN', icon: '🔴', color: 'from-red-500 to-orange-500' },
-    { name: 'Vodafone', icon: '📱', color: 'from-red-600 to-red-700' },
-    { name: 'AirtelTigo', icon: '🟢', color: 'from-green-500 to-green-600' },
-  ];
+  useEffect(() => {
+    fetchActivePlans();
+  }, []);
 
-  const plans = [
-    { size: '100MB', price: '₵0.99', desc: 'Perfect for browsing', network: 'MTN' },
-    { size: '500MB', price: '₵2.99', desc: 'Videos & social media', network: 'MTN' },
-    { size: '1GB', price: '₵4.99', desc: 'Daily usage', network: 'MTN' },
-    { size: '2GB', price: '₵8.99', desc: 'Streaming ready', network: 'Vodafone' },
-    { size: '5GB', price: '₵19.99', desc: 'Unlimited streaming', network: 'Vodafone' },
-    { size: '10GB', price: '₵34.99', desc: 'Heavy users', network: 'AirtelTigo' },
-  ];
+  const fetchActivePlans = async () => {
+    try {
+      const response = await dataplans.list('', 'active');
+      if (response.success && response.plans) {
+        setPlans(response.plans.slice(0, 6));
+        
+        const uniqueNetworks = [...new Set(response.plans.map(p => p.network))];
+        const networkMap = {
+          'MTN': { name: 'MTN', icon: '🔴' },
+          'TELECEL': { name: 'Telecel', icon: '📱' },
+          'AIRTELTIGO': { name: 'AirtelTigo', icon: '🟢' },
+        };
+        
+        setNetworks(uniqueNetworks.map(n => networkMap[n] || { name: n, icon: '📱' }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch plans:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const features = [
     { icon: '⚡', title: 'Instant Delivery', desc: 'Get data within seconds of purchase' },
@@ -118,27 +133,43 @@ export default function Home() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Popular Data Plans</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan, idx) => (
-            <div key={idx} className="card p-6 hover:shadow-lg transition">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-2xl font-bold">{plan.size}</p>
-                  <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{plan.desc}</p>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-4"></div>
+            <p className="text-slate-600 dark:text-slate-400">Loading available plans...</p>
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-slate-600 dark:text-slate-400 mb-4">No active data plans available</p>
+            {!user && (
+              <Link to="/login" className="btn btn-primary">
+                Sign In to View Plans
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {plans.map((plan) => (
+              <div key={plan._id} className="card p-6 hover:shadow-lg transition">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-2xl font-bold">{plan.dataSize}</p>
+                    <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Valid for {plan.validity}</p>
+                  </div>
+                  <span className="text-xs px-3 py-1 rounded font-bold" style={{backgroundColor: 'var(--primary-600)', color: 'white'}}>
+                    {plan.network}
+                  </span>
                 </div>
-                <span className="text-xs px-3 py-1 rounded font-bold" style={{backgroundColor: 'var(--primary-600)', color: 'white'}}>
-                  {plan.network}
-                </span>
+                <div className="flex justify-between items-center">
+                  <p className="text-2xl font-bold text-primary-600">GHS {plan.sellingPrice.toFixed(2)}</p>
+                  <Link to={user ? '/buy-data' : '/login'} className="btn btn-secondary text-sm">
+                    {user ? 'Buy Now' : 'View'}
+                  </Link>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <p className="text-2xl font-bold text-primary-600">{plan.price}</p>
-                <button className="btn btn-secondary text-sm">
-                  {user ? 'Buy Now' : 'View'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
