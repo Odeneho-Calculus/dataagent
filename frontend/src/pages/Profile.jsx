@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Phone, Copy, Shield, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import UserLayout from '../components/UserLayout';
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -33,8 +34,9 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <UserLayout>
+      <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-8">My Profile</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -182,6 +184,7 @@ export default function Profile() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </UserLayout>
   );
 }

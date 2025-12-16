@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Copy, TrendingUp, Clock, Zap } from 'lucide-react';
 import { dataplans, wallet, purchases, publicAPI } from '../services/api';
+import UserLayout from '../components/UserLayout';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -52,26 +53,43 @@ export default function Dashboard() {
         purchases.list(10, 0),
       ]);
 
-      const transactions = transactionsRes.success ? transactionsRes.transactions || [] : [];
+      const walletTransactions = transactionsRes.success ? transactionsRes.transactions || [] : [];
       const purchasesList = purchasesRes.success ? purchasesRes.purchases || [] : [];
 
+      const getTransactionType = (tx) => {
+        if (tx.type === 'wallet_topup') return 'Wallet Top-up';
+        if (tx.type === 'referral_bonus') return 'Referral Bonus';
+        if (tx.type === 'wallet_funding') {
+          const desc = tx.description?.toLowerCase() || '';
+          if (desc.includes('data purchase')) return 'Data Purchase';
+          if (desc.includes('top-up') || desc.includes('topup')) return 'Wallet Top-up';
+          return 'Wallet Transaction';
+        }
+        return 'Transaction';
+      };
+
       const combined = [
-        ...transactions.map(tx => ({
+        ...walletTransactions.map(tx => ({
           id: tx._id,
-          type: tx.type === 'wallet_topup' ? 'Wallet Top-up' : 
-                tx.type === 'referral_bonus' ? 'Referral Bonus' : 'Refund',
+          type: getTransactionType(tx),
+          description: tx.description || 'Transaction',
           amount: `${tx.amount > 0 ? '+' : ''}GHS ${Math.abs(tx.amount).toFixed(2)}`,
           date: new Date(tx.createdAt),
           dateStr: formatDate(new Date(tx.createdAt)),
           status: tx.status.charAt(0).toUpperCase() + tx.status.slice(1),
+          statusRaw: tx.status,
+          rawAmount: tx.amount,
         })),
         ...purchasesList.map(purchase => ({
           id: purchase._id,
           type: 'Data Purchase',
+          description: `${purchase.gb}GB ${purchase.network} to ${purchase.recipient}`,
           amount: `-GHS ${purchase.price.toFixed(2)}`,
           date: new Date(purchase.createdAt),
           dateStr: formatDate(new Date(purchase.createdAt)),
           status: purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1),
+          statusRaw: purchase.status,
+          rawAmount: -purchase.price,
         })),
       ]
         .sort((a, b) => b.date - a.date)
@@ -80,16 +98,10 @@ export default function Dashboard() {
 
       setRecentTransactions(combined);
 
-      const totalSpent = purchasesList.reduce((sum, p) => sum + (p.price || 0), 0);
-      const dataUsed = purchasesList.reduce((sum, p) => sum + (p.gb || 0), 0);
-      const referralEarnings = transactions
-        .filter(tx => tx.type === 'referral_bonus')
-        .reduce((sum, tx) => sum + (tx.amount || 0), 0);
-
       const newStats = [
-        { label: 'Total Spent', value: `GHS ${totalSpent.toFixed(2)}`, icon: '💳' },
-        { label: 'Data Used', value: `${dataUsed}GB`, icon: '📊' },
-        { label: 'Referral Earnings', value: `GHS ${referralEarnings.toFixed(2)}`, icon: '👥' },
+        { label: 'Total Spent', value: `GHS ${(user?.totalSpent || 0).toFixed(2)}`, icon: '💳' },
+        { label: 'Data Used', value: `${user?.dataUsed || 0}GB`, icon: '📊' },
+        { label: 'Referral Earnings', value: `GHS ${(user?.referralEarnings || 0).toFixed(2)}`, icon: '👥' },
       ];
 
       setStats(newStats);
@@ -97,9 +109,9 @@ export default function Dashboard() {
       console.error('Failed to fetch transactions and stats:', err);
       setRecentTransactions([]);
       setStats([
-        { label: 'Total Spent', value: 'GHS 0.00', icon: '💳' },
-        { label: 'Data Used', value: '0GB', icon: '📊' },
-        { label: 'Referral Earnings', value: 'GHS 0.00', icon: '👥' },
+        { label: 'Total Spent', value: `GHS ${(user?.totalSpent || 0).toFixed(2)}`, icon: '💳' },
+        { label: 'Data Used', value: `${user?.dataUsed || 0}GB`, icon: '📊' },
+        { label: 'Referral Earnings', value: `GHS ${(user?.referralEarnings || 0).toFixed(2)}`, icon: '👥' },
       ]);
     }
   };
@@ -138,8 +150,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <UserLayout>
+      <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Dashboard</h1>
           <p style={{color: 'var(--text-secondary)'}}>Welcome back, {user?.name}!</p>
@@ -302,11 +315,19 @@ export default function Dashboard() {
                     {recentTransactions.map(tx => (
                       <tr key={tx.id} style={{borderBottom: '1px solid var(--border-color)'}}>
                         <td className="py-3 px-4">{tx.type}</td>
-                        <td className="py-3 px-4 font-medium">{tx.amount}</td>
+                        <td className="py-3 px-4 font-medium" style={{color: tx.rawAmount < 0 ? '#ef4444' : '#22c55e'}}>
+                          {tx.amount}
+                        </td>
                         <td className="py-3 px-4">{tx.date}</td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-1 rounded text-xs" style={{backgroundColor: 'var(--bg-secondary)'}}>
-                            {tx.status}
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            tx.statusRaw === 'completed' 
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                              : tx.statusRaw === 'failed'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                          }`}>
+                            ✓ {tx.status}
                           </span>
                         </td>
                       </tr>
@@ -323,6 +344,7 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </UserLayout>
   );
 }

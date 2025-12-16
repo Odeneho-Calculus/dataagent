@@ -186,19 +186,70 @@ exports.toggleUserStatus = async (req, res) => {
 
 exports.getTransactions = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, type = '', status = '' } = req.query;
     const skip = (page - 1) * limit;
 
-    const transactions = await Transaction.find()
-      .limit(parseInt(limit))
-      .skip(skip)
-      .sort({ createdAt: -1 });
+    const allTransactions = [];
 
-    const total = await Transaction.countDocuments();
+    const txFilter = {};
+    const orderFilter = {};
+
+    if (type && type !== 'data_purchase') {
+      txFilter.type = type;
+    }
+    
+    if (status) {
+      if (type === 'data_purchase' || !type) {
+        if (status === 'successful') {
+          orderFilter.status = 'completed';
+        } else {
+          orderFilter.status = status;
+        }
+      }
+      if (type !== 'data_purchase') {
+        txFilter.status = status;
+      }
+    }
+
+    if (!type || type === 'data_purchase') {
+      const orders = await Order.find(orderFilter)
+        .populate('userId', 'name email')
+        .sort({ createdAt: -1 });
+
+      const formattedOrders = orders.map(order => ({
+        _id: order._id,
+        userId: order.userId,
+        type: 'data_purchase',
+        amount: order.amount,
+        currency: 'GHS',
+        status: order.status === 'completed' ? 'successful' : order.status,
+        reference: order.orderNumber,
+        description: `${order.planName} - ${order.dataAmount}`,
+        isAPI: false,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        _isOrder: true,
+      }));
+
+      allTransactions.push(...formattedOrders);
+    }
+
+    if (!type || type !== 'data_purchase') {
+      const transactions = await Transaction.find(txFilter)
+        .populate('userId', 'name email')
+        .sort({ createdAt: -1 });
+
+      allTransactions.push(...transactions);
+    }
+
+    allTransactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const total = allTransactions.length;
+    const paginatedTransactions = allTransactions.slice(skip, skip + parseInt(limit));
 
     res.status(200).json({
       success: true,
-      transactions,
+      transactions: paginatedTransactions,
       pagination: {
         total,
         page: parseInt(page),
@@ -207,6 +258,81 @@ exports.getTransactions = async (req, res) => {
       },
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.deleteTransaction = async (req, res) => {
+  try {
+    const transactionId = req.params.id;
+
+    const transaction = await Transaction.findByIdAndDelete(transactionId);
+
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Transaction deleted successfully',
+      transaction: {
+        id: transaction._id,
+        reference: transaction.reference,
+      },
+    });
+  } catch (error) {
+    console.error('deleteTransaction error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.deleteAllTransactions = async (req, res) => {
+  try {
+    const result = await Transaction.deleteMany({});
+
+    res.status(200).json({
+      success: true,
+      message: `Deleted ${result.deletedCount} transactions`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('deleteAllTransactions error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.bulkDeleteTransactionsByStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!['successful', 'pending', 'failed', 'cancelled'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be successful, pending, failed, or cancelled',
+      });
+    }
+
+    const result = await Transaction.deleteMany({ status });
+
+    res.status(200).json({
+      success: true,
+      message: `Deleted ${result.deletedCount} transactions with status: ${status}`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('bulkDeleteTransactionsByStatus error:', error);
     res.status(500).json({
       success: false,
       message: error.message,

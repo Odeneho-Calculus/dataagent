@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Menu, RotateCcw, Eye, Edit2, Trash2, X, Check, AlertCircle } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
+import Pagination from '../components/Pagination';
 import { admin as adminAPI } from '../services/api';
 
 export default function AdminOrders() {
@@ -244,19 +245,20 @@ export default function AdminOrders() {
                   </div>
                 ) : (
                   <>
-                    <div
-                      className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg"
-                      style={{
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                      }}
-                    >
-                      <style>{`
-                        div::-webkit-scrollbar {
-                          display: none;
-                        }
-                      `}</style>
-                      <table className="w-full text-sm">
+                    <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                      <div
+                        className="overflow-x-auto"
+                        style={{
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none',
+                        }}
+                      >
+                        <style>{`
+                          div::-webkit-scrollbar {
+                            display: none;
+                          }
+                        `}</style>
+                        <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                             <th className="px-4 py-3 text-left font-semibold text-slate-900 dark:text-white whitespace-nowrap">
@@ -378,28 +380,13 @@ export default function AdminOrders() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
-
-                    <div className="mt-6 flex justify-between items-center">
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        Page {page} of {totalPages}
-                      </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setPage(Math.max(1, page - 1))}
-                          disabled={page === 1}
-                          className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg disabled:opacity-50 transition"
-                        >
-                          Previous
-                        </button>
-                        <button
-                          onClick={() => setPage(Math.min(totalPages, page + 1))}
-                          disabled={page === totalPages}
-                          className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg disabled:opacity-50 transition"
-                        >
-                          Next
-                        </button>
                       </div>
+                      <Pagination 
+                        currentPage={page} 
+                        totalPages={totalPages} 
+                        onPageChange={setPage}
+                        isLoading={loading}
+                      />
                     </div>
                   </>
                 )}

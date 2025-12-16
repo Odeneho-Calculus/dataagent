@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Download, Filter } from 'lucide-react';
+import { Eye, RotateCw } from 'lucide-react';
 import { purchases } from '../services/api';
+import UserLayout from '../components/UserLayout';
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [networkFilter, setNetworkFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -29,20 +32,31 @@ export default function Orders() {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchOrders();
+    setIsRefreshing(false);
+  };
+
+  const getUniqueNetworks = () => {
+    const networks = new Set(orders.map(o => o.network).filter(Boolean));
+    return Array.from(networks).sort();
+  };
+
   const filteredOrders = orders.filter(order => {
-    if (filter === 'all') return true;
-    if (filter === 'completed') return order.status === 'completed';
-    if (filter === 'pending') return order.status === 'pending';
-    if (filter === 'processing') return order.status === 'processing';
-    if (filter === 'failed') return order.status === 'failed';
+    if (statusFilter !== 'all' && order.status !== statusFilter) return false;
+    if (networkFilter !== 'all' && order.network !== networkFilter) return false;
     return true;
   });
 
-  const statusColors = {
-    completed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300' },
-    pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-300' },
-    processing: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300' },
-    failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' },
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 
   const handleViewDetails = (order) => {
@@ -51,13 +65,21 @@ export default function Orders() {
   };
 
   return (
-    <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold">My Orders</h1>
-          <button className="btn btn-secondary flex items-center gap-2">
-            <Download size={16} />
-            Export CSV
+    <UserLayout>
+      <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold">My Orders</h1>
+            <p className="text-sm mt-2" style={{color: 'var(--text-secondary)'}}>View and manage your data purchase orders</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition disabled:opacity-50"
+            title="Refresh orders"
+          >
+            <RotateCw size={20} className={isRefreshing ? 'animate-spin' : ''} />
           </button>
         </div>
 
@@ -67,52 +89,41 @@ export default function Orders() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Total Orders</p>
-            <p className="text-3xl font-bold mt-2">{orders.length}</p>
-          </div>
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Completed</p>
-            <p className="text-3xl font-bold mt-2 text-green-500">
-              {orders.filter(o => o.status === 'completed').length}
-            </p>
-          </div>
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Pending</p>
-            <p className="text-3xl font-bold mt-2 text-yellow-500">
-              {orders.filter(o => o.status === 'pending' || o.status === 'processing').length}
-            </p>
-          </div>
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Failed</p>
-            <p className="text-3xl font-bold mt-2 text-red-500">
-              {orders.filter(o => o.status === 'failed').length}
-            </p>
+        <div className="card p-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <label style={{color: 'var(--text-secondary)'}} className="text-sm block mb-2">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border" 
+                style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}
+              >
+                <option value="all">All</option>
+                <option value="completed">Completed</option>
+                <option value="processing">Processing</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+            <div className="md:col-span-3">
+              <label style={{color: 'var(--text-secondary)'}} className="text-sm block mb-2">Network</label>
+              <select
+                value={networkFilter}
+                onChange={(e) => setNetworkFilter(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border" 
+                style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}
+              >
+                <option value="all">All</option>
+                {getUniqueNetworks().map(network => (
+                  <option key={network} value={network}>{network}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         <div className="card p-8">
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <Filter size={18} style={{color: 'var(--text-secondary)'}} />
-              <span style={{color: 'var(--text-secondary)'}}>Filter:</span>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {['all', 'completed', 'processing', 'pending', 'failed'].map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-4 py-2 rounded-lg transition ${
-                    filter === f ? 'btn btn-primary' : 'btn btn-secondary'
-                  }`}
-                >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
@@ -127,13 +138,13 @@ export default function Orders() {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{borderBottom: '1px solid var(--border-color)'}}>
-                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Order #</th>
-                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Data Bundle</th>
-                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Amount</th>
-                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Phone</th>
-                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Payment</th>
-                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Status</th>
+                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Order ID</th>
                     <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Date</th>
+                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Time</th>
+                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Network</th>
+                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Plan</th>
+                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Amount</th>
+                    <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Status</th>
                     <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Action</th>
                   </tr>
                 </thead>
@@ -141,28 +152,18 @@ export default function Orders() {
                   {filteredOrders.map(order => (
                     <tr key={order.id || order._id} style={{borderBottom: '1px solid var(--border-color)'}}>
                       <td className="py-3 px-4 font-mono text-xs">{order.orderNumber?.slice(-8) || 'N/A'}</td>
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="font-semibold">{order.dataAmount}</p>
-                          <p className="text-xs" style={{color: 'var(--text-secondary)'}}>{order.network}</p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 font-bold text-primary-600">
-                        GHS {order.amount?.toFixed(2) || '0.00'}
-                      </td>
-                      <td className="py-3 px-4 font-mono text-xs">{order.phoneNumber}</td>
-                      <td className="py-3 px-4 text-xs">
-                        <span className="capitalize">{order.paymentMethod}</span>
-                      </td>
+                      <td className="py-3 px-4 text-sm">{formatDate(order.date || order.createdAt)}</td>
+                      <td className="py-3 px-4 text-xs font-mono">{formatTime(order.date || order.createdAt)}</td>
+                      <td className="py-3 px-4 text-sm">{order.network || 'N/A'}</td>
+                      <td className="py-3 px-4 text-sm">{order.dataAmount && order.network ? `${order.dataAmount} ${order.network} Data` : 'N/A'}</td>
+                      <td className="py-3 px-4 font-bold text-primary-600">GHS {order.amount?.toFixed(2) || '0.00'}</td>
                       <td className="py-3 px-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[order.status]?.bg || ''} ${statusColors[order.status]?.text || ''}`}
+                          style={{color: '#2563eb'}}
+                          className="text-sm font-medium"
                         >
                           {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 text-xs" style={{color: 'var(--text-secondary)'}}>
-                        {new Date(order.date || order.createdAt).toLocaleDateString('en-CA')}
                       </td>
                       <td className="py-3 px-4">
                         <button
@@ -220,16 +221,14 @@ export default function Orders() {
 
               <div className="flex justify-between items-center pb-3 border-b" style={{borderColor: 'var(--border-color)'}}>
                 <span style={{color: 'var(--text-secondary)'}}>Status</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[selectedOrder.status]?.bg || ''} ${statusColors[selectedOrder.status]?.text || ''}`}
-                >
+                <span style={{color: '#2563eb'}} className="text-sm font-medium">
                   {selectedOrder.status?.charAt(0).toUpperCase() + selectedOrder.status?.slice(1)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center pb-3 border-b" style={{borderColor: 'var(--border-color)'}}>
                 <span style={{color: 'var(--text-secondary)'}}>Order Date</span>
-                <span className="text-sm">{new Date(selectedOrder.date || selectedOrder.createdAt).toLocaleString('en-CA')}</span>
+                <span className="text-sm">{new Date(selectedOrder.date || selectedOrder.createdAt).toLocaleString('en-US')}</span>
               </div>
 
               {selectedOrder.providerMessage && (
@@ -257,5 +256,6 @@ export default function Orders() {
         </div>
       )}
     </div>
+    </UserLayout>
   );
 }

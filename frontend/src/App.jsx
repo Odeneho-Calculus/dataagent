@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import BuyData from './pages/BuyData';
+import Orders from './pages/Orders';
 import Transactions from './pages/Transactions';
 import TopUp from './pages/TopUp';
 import Profile from './pages/Profile';
@@ -43,6 +44,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BuyData />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute>
+                  <Orders />
                 </ProtectedRoute>
               }
             />

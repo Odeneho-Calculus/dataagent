@@ -1,18 +1,17 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, TrendingUp, ShoppingCart, Menu, X, Database, Gift, Package } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, TrendingUp, Wallet, User, Menu, X } from 'lucide-react';
 
-export default function AdminSidebar({ isOpen, onClose }) {
+export default function UserSidebar({ isOpen, onClose }) {
   const location = useLocation();
 
   const navItems = [
-    { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin/users', label: 'Users', icon: Users },
-    { path: '/admin/dataplans', label: 'Data Plans', icon: Database },
-    { path: '/admin/transactions', label: 'Transactions', icon: TrendingUp },
-    { path: '/admin/orders', label: 'Orders', icon: Package },
-    { path: '/admin/referrals', label: 'Referral Program', icon: Gift },
-    { path: '/admin/purchases', label: 'Purchases', icon: ShoppingCart },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/buy-data', label: 'Buy Data', icon: ShoppingCart },
+    { path: '/orders', label: 'My Orders', icon: Package },
+    { path: '/transactions', label: 'Transaction History', icon: TrendingUp },
+    { path: '/topup', label: 'Wallet', icon: Wallet },
+    { path: '/profile', label: 'Profile', icon: User },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -33,9 +32,9 @@ export default function AdminSidebar({ isOpen, onClose }) {
       >
         <div className="h-full flex flex-col">
           <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <Link to="/admin" className="flex items-center gap-2 hover:opacity-80 transition">
-              <span className="text-2xl">👑</span>
-              <span className="font-bold text-slate-900 dark:text-white">Admin</span>
+            <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition">
+              <span className="text-2xl">📱</span>
+              <span className="font-bold text-slate-900 dark:text-white">DataHub</span>
             </Link>
             <button
               onClick={onClose}
@@ -68,7 +67,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
           </nav>
 
           <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
-            <p>Admin Dashboard v1.0</p>
+            <p>User Dashboard v1.0</p>
           </div>
         </div>
       </aside>

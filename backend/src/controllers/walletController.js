@@ -152,9 +152,14 @@ exports.verifyPayment = async (req, res) => {
     transaction.paystackReference = paystackData.reference;
     await transaction.save();
 
+    const updateObj = { $inc: { balance: transaction.amount } };
+    if (transaction.type === 'referral_bonus') {
+      updateObj.$inc.referralEarnings = transaction.amount;
+    }
+
     const user = await User.findByIdAndUpdate(
       req.userId,
-      { $inc: { balance: transaction.amount } },
+      updateObj,
       { new: true }
     );
 

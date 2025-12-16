@@ -51,10 +51,7 @@ exports.syncDataPlans = async (req, res) => {
         existingPlan.isActive = plan.isActive;
         existingPlan.discount = plan.discount;
 
-        // Disable plan if out of stock
-        if (!plan.inStock) {
-          existingPlan.status = 'inactive';
-        }
+        // Keep existing status - don't override admin's choice
 
         // Only update prices if not edited by admin
         if (!existingPlan.isEdited) {
@@ -107,7 +104,8 @@ exports.syncDataPlans = async (req, res) => {
 
 exports.getDataPlans = async (req, res) => {
   try {
-    const { network, status = 'active' } = req.query;
+    const { network, status, page = 1, limit = 10 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     const query = {};
 
     if (network) {
@@ -117,7 +115,11 @@ exports.getDataPlans = async (req, res) => {
       query.status = status;
     }
 
-    const plans = await DataPlan.find(query).sort({ network: 1, createdAt: 1 });
+    const total = await DataPlan.countDocuments(query);
+    const plans = await DataPlan.find(query)
+      .sort({ network: 1, createdAt: 1 })
+      .limit(parseInt(limit))
+      .skip(skip);
 
     const groupedByNetwork = plans.reduce((acc, plan) => {
       if (!acc[plan.network]) {
@@ -132,6 +134,12 @@ exports.getDataPlans = async (req, res) => {
       plans,
       grouped: groupedByNetwork,
       count: plans.length,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit)),
+      },
     });
   } catch (error) {
     res.status(500).json({

@@ -15,6 +15,9 @@ const {
   deleteUser,
   restoreUser,
   getTransactions,
+  deleteTransaction,
+  deleteAllTransactions,
+  bulkDeleteTransactionsByStatus,
   getPurchases,
   getOrders,
   getAllReferrals,
@@ -45,6 +48,9 @@ router.patch('/users/:id/unsuspend', unsuspendUser);
 router.delete('/users/:id', deleteUser);
 router.patch('/users/:id/restore', restoreUser);
 router.get('/transactions', getTransactions);
+router.delete('/transactions/:id', deleteTransaction);
+router.delete('/transactions', deleteAllTransactions);
+router.post('/transactions/bulk-delete', bulkDeleteTransactionsByStatus);
 router.get('/purchases', getPurchases);
 router.get('/orders', getOrders);
 router.post('/orders/sync-topza', syncOrderStatusesFromTopza);

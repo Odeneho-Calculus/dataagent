@@ -11,7 +11,8 @@
     "create-admin": "node scripts/createAdmin.js",
     "make-admin": "node scripts/makeAdmin.js",
     "change-role": "node scripts/changeRole.js",
-    "list-users": "node scripts/listUsers.js"
+    "list-users": "node scripts/listUsers.js",
+    "migrate-transactions": "node scripts/migrateTransactionTypes.js"
   },
   "keywords": ["api", "express", "mongodb", "jwt"],
   "author": "",

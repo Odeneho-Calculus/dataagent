@@ -71,13 +71,35 @@ exports.getWalletBalance = async () => {
 
 exports.fetchAllDataPlans = async () => {
   try {
-    const response = await topzaApi.get('/v1/dataplans');
-    
-    if (response.data && response.data.success && Array.isArray(response.data.data)) {
-      return response.data.data;
+    let allPlans = [];
+    let page = 1;
+    let totalPages = 1;
+    const limit = 100;
+
+    console.log('[Topza API] Starting data plans fetch with pagination');
+
+    while (page <= totalPages) {
+      const response = await topzaApi.get('/v1/dataplans', {
+        params: { page, limit }
+      });
+      
+      if (response.data && response.data.success && Array.isArray(response.data.data)) {
+        const plans = response.data.data;
+        allPlans = allPlans.concat(plans);
+        
+        if (response.data.pagination) {
+          totalPages = response.data.pagination.pages;
+          console.log(`[Topza API] Fetched page ${page} of ${totalPages}, received ${plans.length} plans`);
+        }
+        
+        page++;
+      } else {
+        break;
+      }
     }
-    
-    return [];
+
+    console.log(`[Topza API] Total data plans fetched: ${allPlans.length}`);
+    return allPlans;
   } catch (error) {
     console.error('[Topza API] Error fetching data plans:', {
       message: error.message,

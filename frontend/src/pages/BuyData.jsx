@@ -4,6 +4,7 @@ import { ShoppingCart, CheckCircle, AlertCircle } from 'lucide-react';
 import { dataplans } from '../services/api';
 import PurchaseModal from '../components/PurchaseModal';
 import PurchaseVerificationModal from '../components/PurchaseVerificationModal';
+import UserLayout from '../components/UserLayout';
 
 const networkEmojis = {
   'MTN': '🔴',
@@ -123,8 +124,9 @@ export default function BuyData() {
   const currentBundles = bundles[selectedNetwork] || [];
 
   return (
-    <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <UserLayout>
+      <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-8">Buy Data Bundles</h1>
 
         {successMessage && (
@@ -235,6 +237,7 @@ export default function BuyData() {
           />
         )}
       </div>
-    </div>
+      </div>
+    </UserLayout>
   );
 }

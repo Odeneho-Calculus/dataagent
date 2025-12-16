@@ -9,12 +9,16 @@ const transactionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['wallet_topup', 'purchase_refund', 'referral_bonus'],
+      enum: ['data_purchase', 'wallet_funding', 'refund', 'wallet_topup', 'purchase_refund', 'referral_bonus'],
       required: true,
     },
     amount: {
       type: Number,
       required: true,
+    },
+    currency: {
+      type: String,
+      default: 'GHS',
     },
     reference: {
       type: String,
@@ -27,12 +31,21 @@ const transactionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'completed', 'failed'],
+      enum: ['successful', 'pending', 'failed', 'cancelled', 'completed'],
       default: 'pending',
     },
     description: String,
+    isAPI: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
+
+transactionSchema.index({ userId: 1, createdAt: -1 });
+transactionSchema.index({ status: 1 });
+transactionSchema.index({ type: 1 });
+transactionSchema.index({ isAPI: 1 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);

@@ -64,7 +64,13 @@ router.post('/create', protect, async (req, res) => {
 
     await User.findByIdAndUpdate(
       req.userId,
-      { $inc: { balance: -price } }
+      { 
+        $inc: { 
+          balance: -price,
+          totalSpent: price,
+          dataUsed: gb
+        } 
+      }
     );
 
     await Transaction.create({

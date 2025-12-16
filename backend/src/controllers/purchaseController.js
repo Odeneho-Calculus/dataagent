@@ -164,11 +164,17 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
 
     await User.findByIdAndUpdate(
       req.userId,
-      { $inc: { balance: -plan.sellingPrice } },
+      { 
+        $inc: { 
+          balance: -plan.sellingPrice,
+          totalSpent: plan.sellingPrice,
+          dataUsed: parseFloat(plan.dataSize) || 0
+        } 
+      },
       { new: true }
     );
 
-    order.status = 'completed';
+    order.status = 'processing';
     order.topzaOrderId = topzaData.order?.id;
     order.transactionReference = topzaData.transaction?.reference;
     order.transactionId = transaction._id;
@@ -481,13 +487,21 @@ exports.verifyDataPurchase = async (req, res) => {
       await transaction.save();
     }
 
+    const planData = await DataPlan.findById(order.dataPlanId);
+    
     await User.findByIdAndUpdate(
       req.userId,
-      { $inc: { balance: -order.amount } },
+      { 
+        $inc: { 
+          balance: -order.amount,
+          totalSpent: order.amount,
+          dataUsed: parseFloat(planData?.dataSize) || parseFloat(order.dataAmount) || 0
+        } 
+      },
       { new: true }
     );
 
-    order.status = 'completed';
+    order.status = 'processing';
     order.topzaOrderId = topzaData.order?.id;
     if (transaction) {
       order.transactionId = transaction._id;

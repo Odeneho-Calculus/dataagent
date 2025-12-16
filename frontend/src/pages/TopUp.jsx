@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { CreditCard, Loader } from 'lucide-react';
 import PaymentModal from '../components/PaymentModal';
 import { wallet } from '../services/api';
+import UserLayout from '../components/UserLayout';
 
 export default function TopUp() {
   const { user, refreshUser } = useAuth();
@@ -48,8 +49,9 @@ export default function TopUp() {
   };
 
   return (
-    <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+    <UserLayout>
+      <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8" style={{color: 'var(--text-primary)'}}>Top Up Wallet</h1>
 
         {error && (
@@ -168,6 +170,7 @@ export default function TopUp() {
           onSuccess={handlePaymentSuccess}
         />
       )}
-    </div>
+      </div>
+    </UserLayout>
   );
 }

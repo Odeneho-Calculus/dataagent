@@ -82,8 +82,12 @@ export const admin = {
   unsuspendUser: (id) => api.patch(`/admin/users/${id}/unsuspend`),
   deleteUser: (id) => api.delete(`/admin/users/${id}`),
   restoreUser: (id) => api.patch(`/admin/users/${id}/restore`),
-  getTransactions: (page = 1, limit = 10) =>
-    api.get(`/admin/transactions?page=${page}&limit=${limit}`),
+  getTransactions: (page = 1, limit = 10, type = '', status = '') =>
+    api.get(`/admin/transactions?page=${page}&limit=${limit}&type=${type}&status=${status}`),
+  deleteTransaction: (id) => api.delete(`/admin/transactions/${id}`),
+  deleteAllTransactions: () => api.delete('/admin/transactions'),
+  bulkDeleteTransactionsByStatus: (status) =>
+    api.post('/admin/transactions/bulk-delete', { status }),
   getPurchases: (page = 1, limit = 10) =>
     api.get(`/admin/purchases?page=${page}&limit=${limit}`),
   getOrders: (page = 1, limit = 10, status = '', network = '') =>
@@ -106,8 +110,8 @@ export const admin = {
 };
 
 export const dataplans = {
-  list: (network = '', status = 'active') =>
-    api.get(`/dataplans/list?network=${network}&status=${status}`),
+  list: (network = '', status = 'active', page = 1, limit = 10) =>
+    api.get(`/dataplans/list?network=${network}&status=${status}&page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/dataplans/${id}`),
   sync: () => api.post('/dataplans/sync'),
   updatePrices: (id, costPrice, sellingPrice) =>
