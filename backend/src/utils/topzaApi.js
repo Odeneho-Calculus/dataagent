@@ -180,7 +180,11 @@ exports.checkOrdersStatus = async (orderIds) => {
 
     const requestBody = { orderIds };
     
-    console.log('[Topza API] Checking status for', orderIds.length, 'orders');
+    console.log('[Topza API] Checking status for', orderIds.length, 'orders', {
+      sampleIds: orderIds.slice(0, 3),
+      apiKey: TOPZA_API_KEY ? `${TOPZA_API_KEY.substring(0, 10)}...` : 'NOT SET',
+      baseUrl: TOPZA_BASE_URL,
+    });
     
     const response = await topzaApi.post('/v1/orders/check-status', requestBody);
     

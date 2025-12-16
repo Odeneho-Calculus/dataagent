@@ -50,7 +50,29 @@ const syncOrderStatusesFromTopza = async () => {
 
     console.log(`[Order Sync] Found ${orders.length} orders to sync`);
 
-    const orderIds = orders.map(order => order.topzaOrderId);
+    const orderIds = orders
+      .map(order => order.topzaOrderId)
+      .filter(id => id && id !== 'null' && id !== 'undefined');
+    
+    if (orderIds.length === 0) {
+      console.log('[Order Sync] No valid topzaOrderIds found. All orders may have null values.');
+      isSyncing = false;
+      return {
+        success: true,
+        message: 'No valid orders to sync',
+        data: {
+          totalOrders: orders.length,
+          validOrderIds: 0,
+          updated: 0,
+          unchanged: 0,
+          errors: 0,
+          duration: `${Date.now() - startTime}ms`,
+        },
+      };
+    }
+    
+    console.log(`[Order Sync] Found ${orderIds.length} valid topzaOrderIds out of ${orders.length} orders`);
+
     let updated = 0;
     let unchanged = 0;
     let errors = 0;
