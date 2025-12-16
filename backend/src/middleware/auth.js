@@ -16,7 +16,7 @@ const protect = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
     next();
-  } catch (_error) {
+  } catch {
     return res.status(401).json({ success: false, message: 'Token invalid or expired' });
   }
 };
@@ -28,7 +28,7 @@ const adminOnly = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Admin access required' });
     }
     next();
-  } catch (_error) {
+  } catch {
     return res.status(401).json({ success: false, message: 'Token invalid or expired' });
   }
 };
