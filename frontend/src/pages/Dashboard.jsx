@@ -123,11 +123,11 @@ export default function Dashboard() {
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffMinutes = Math.floor(diffTime / (1000 * 60));
 
-    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
     
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const fetchReferralSettings = async () => {
@@ -151,199 +151,236 @@ export default function Dashboard() {
 
   return (
     <UserLayout>
-      <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Dashboard</h1>
-          <p style={{color: 'var(--text-secondary)'}}>Welcome back, {user?.name}!</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Account Balance</p>
-            <p className="text-2xl font-bold mt-2">
-              GHS {user?.balance?.toFixed(2) || '0.00'}
-            </p>
+      <div className="min-h-screen w-full overflow-x-hidden" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+          {/* Header */}
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1">Dashboard</h1>
+            <p className="text-sm sm:text-base truncate" style={{color: 'var(--text-secondary)'}}>Welcome back, {user?.name}!</p>
           </div>
 
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Email</p>
-            <p className="text-sm font-medium mt-2 truncate">
-              {user?.email}
-            </p>
-          </div>
-
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Phone</p>
-            <p className="text-sm font-medium mt-2">
-              {user?.phone || 'Not set'}
-            </p>
-          </div>
-
-          <div className="card p-6">
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Referral Code</p>
-            <button
-              onClick={copyReferralCode}
-              className="text-sm font-bold text-primary-600 mt-2 flex items-center gap-2 hover:opacity-80 transition"
-            >
-              {user?.referralCode}
-              <Copy size={14} />
-            </button>
-            {copied && <p className="text-xs text-green-500 mt-1">Copied!</p>}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {loadingData ? (
-            <div className="col-span-3 text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
-              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Loading stats...</p>
+          {/* Account Info Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
+            <div className="card p-3 sm:p-4 lg:p-5">
+              <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>Balance</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold mt-1 sm:mt-2 truncate">
+                GHS {user?.balance?.toFixed(2) || '0.00'}
+              </p>
             </div>
-          ) : (
-            stats.map((stat, idx) => (
-              <div key={idx} className="card p-6">
-                <div className="text-3xl mb-3">{stat.icon}</div>
-                <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{stat.label}</p>
-                <p className="text-xl font-bold mt-2">{stat.value}</p>
-              </div>
-            ))
-          )}
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <div className="lg:col-span-2">
-            <div className="card p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Available Data Bundles</h2>
-                <Link to="/buy-data" className="btn btn-primary text-sm">
-                  Buy Now
-                </Link>
+            <div className="card p-3 sm:p-4 lg:p-5">
+              <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>Email</p>
+              <p className="text-xs sm:text-sm font-medium mt-1 sm:mt-2 truncate" title={user?.email}>
+                {user?.email}
+              </p>
+            </div>
+
+            <div className="card p-3 sm:p-4 lg:p-5">
+              <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>Phone</p>
+              <p className="text-xs sm:text-sm font-medium mt-1 sm:mt-2 truncate">
+                {user?.phone || 'Not set'}
+              </p>
+            </div>
+
+            <div className="card p-3 sm:p-4 lg:p-5">
+              <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>Referral</p>
+              <button
+                onClick={copyReferralCode}
+                className="text-xs sm:text-sm font-bold text-primary-600 mt-1 sm:mt-2 flex items-center gap-1 sm:gap-2 hover:opacity-80 transition truncate max-w-full"
+              >
+                <span className="truncate">{user?.referralCode}</span>
+                <Copy size={12} className="flex-shrink-0" />
+              </button>
+              {copied && <p className="text-xs text-green-500 mt-1">Copied!</p>}
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
+            {loadingData ? (
+              <div className="col-span-3 text-center py-6 sm:py-8">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
+                <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>Loading stats...</p>
               </div>
-              {loadingBundles ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
-                  <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Loading available bundles...</p>
+            ) : (
+              stats.map((stat, idx) => (
+                <div key={idx} className="card p-4 sm:p-5 lg:p-6">
+                  <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">{stat.icon}</div>
+                  <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>{stat.label}</p>
+                  <p className="text-base sm:text-lg lg:text-xl font-bold mt-1 sm:mt-2 truncate">{stat.value}</p>
                 </div>
-              ) : dataBundles.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-sm" style={{color: 'var(--text-secondary)'}}>No active data plans available</p>
+              ))
+            )}
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-4 sm:mb-6">
+            {/* Data Bundles */}
+            <div className="lg:col-span-2">
+              <div className="card p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Available Data Bundles</h2>
+                  <Link to="/buy-data" className="btn btn-primary text-xs sm:text-sm whitespace-nowrap">
+                    Buy Now
+                  </Link>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {dataBundles.map(bundle => (
-                    <div key={bundle._id} className="p-4 rounded-lg" style={{backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'}}>
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-bold">{bundle.planName}</h3>
-                          <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{bundle.dataSize}</p>
+                {loadingBundles ? (
+                  <div className="text-center py-6 sm:py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
+                    <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>Loading bundles...</p>
+                  </div>
+                ) : dataBundles.length === 0 ? (
+                  <div className="text-center py-6 sm:py-8">
+                    <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>No active data plans available</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {dataBundles.map(bundle => (
+                      <div key={bundle._id} className="p-3 sm:p-4 rounded-lg" style={{backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'}}>
+                        <div className="flex justify-between items-start gap-2 mb-2 sm:mb-3">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-sm sm:text-base truncate">{bundle.planName}</h3>
+                            <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>{bundle.dataSize}</p>
+                          </div>
+                          <span className="text-xs px-2 py-1 rounded whitespace-nowrap flex-shrink-0" style={{backgroundColor: 'var(--primary-600)', color: 'white'}}>
+                            {bundle.network}
+                          </span>
                         </div>
-                        <span className="text-xs px-2 py-1 rounded" style={{backgroundColor: 'var(--primary-600)', color: 'white'}}>
-                          {bundle.network}
+                        <div className="flex justify-between items-center gap-2">
+                          <p className="font-bold text-primary-600 text-sm sm:text-base truncate">GHS {bundle.sellingPrice.toFixed(2)}</p>
+                          <Link to="/buy-data" className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0">Get</Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Quick Actions */}
+              <div className="card p-4 sm:p-6">
+                <h3 className="font-bold text-sm sm:text-base mb-3 sm:mb-4">Quick Actions</h3>
+                <div className="space-y-2">
+                  <Link to="/buy-data" className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:opacity-80 transition" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                    <Zap size={16} className="flex-shrink-0 sm:w-[18px] sm:h-[18px]" style={{color: 'var(--primary-600)'}} />
+                    <span className="text-xs sm:text-sm truncate">Buy Data</span>
+                  </Link>
+                  <Link to="/topup" className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:opacity-80 transition" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                    <TrendingUp size={16} className="flex-shrink-0 sm:w-[18px] sm:h-[18px]" style={{color: 'var(--primary-600)'}} />
+                    <span className="text-xs sm:text-sm truncate">Top Up Wallet</span>
+                  </Link>
+                  <Link to="/transactions" className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:opacity-80 transition" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                    <Clock size={16} className="flex-shrink-0 sm:w-[18px] sm:h-[18px]" style={{color: 'var(--primary-600)'}} />
+                    <span className="text-xs sm:text-sm truncate">View History</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Referral Bonus */}
+              <div className="card p-4 sm:p-6">
+                <h3 className="font-bold text-sm sm:text-base mb-3 sm:mb-4">Referral Bonus</h3>
+                <p className="text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3" style={{color: 'var(--text-secondary)'}}>
+                  {referralSettings
+                    ? `Earn GHS ${referralSettings.amountPerReferral} for every friend you refer. Share your code and grow your balance!`
+                    : 'Earn rewards for every friend you refer. Share your code and grow your balance!'}
+                </p>
+                <button
+                  onClick={copyReferralCode}
+                  className="btn btn-primary w-full text-xs sm:text-sm"
+                >
+                  Share Code
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Transactions */}
+          <div className="card p-4 sm:p-6 lg:p-8">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4 sm:mb-6">Recent Transactions</h2>
+            {loadingData ? (
+              <div className="text-center py-6 sm:py-8">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
+                <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>Loading transactions...</p>
+              </div>
+            ) : recentTransactions.length === 0 ? (
+              <div className="text-center py-6 sm:py-8">
+                <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>No transactions yet</p>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr style={{borderBottom: '1px solid var(--border-color)'}}>
+                        <th className="text-left py-3 px-4 font-medium" style={{color: 'var(--text-secondary)'}}>Type</th>
+                        <th className="text-left py-3 px-4 font-medium" style={{color: 'var(--text-secondary)'}}>Amount</th>
+                        <th className="text-left py-3 px-4 font-medium" style={{color: 'var(--text-secondary)'}}>Date</th>
+                        <th className="text-left py-3 px-4 font-medium" style={{color: 'var(--text-secondary)'}}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentTransactions.map(tx => (
+                        <tr key={tx.id} style={{borderBottom: '1px solid var(--border-color)'}}>
+                          <td className="py-3 px-4 truncate max-w-[200px]">{tx.type}</td>
+                          <td className="py-3 px-4 font-medium whitespace-nowrap" style={{color: tx.rawAmount < 0 ? '#ef4444' : '#22c55e'}}>
+                            {tx.amount}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap">{tx.date}</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap inline-block ${
+                              tx.statusRaw === 'completed' 
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                : tx.statusRaw === 'failed'
+                                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                            }`}>
+                              ✓ {tx.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-3">
+                  {recentTransactions.map(tx => (
+                    <div key={tx.id} className="p-3 rounded-lg" style={{backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'}}>
+                      <div className="flex justify-between items-start gap-2 mb-2">
+                        <span className="text-xs sm:text-sm font-medium truncate flex-1">{tx.type}</span>
+                        <span className={`text-xs sm:text-sm font-bold whitespace-nowrap flex-shrink-0 ${tx.rawAmount < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                          {tx.amount}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <p className="font-bold text-primary-600">GHS {bundle.sellingPrice.toFixed(2)}</p>
-                        <Link to="/buy-data" className="btn btn-secondary text-xs">Get</Link>
+                      <div className="flex justify-between items-center gap-2 text-xs" style={{color: 'var(--text-secondary)'}}>
+                        <span className="truncate">{tx.date}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
+                          tx.statusRaw === 'completed' 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                            : tx.statusRaw === 'failed'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                            : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                        }`}>
+                          {tx.status}
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
 
-          <div>
-            <div className="card p-6 mb-6">
-              <h3 className="font-bold mb-4">Quick Actions</h3>
-              <div className="space-y-2">
-                <Link to="/buy-data" className="flex items-center gap-3 p-3 rounded-lg hover:opacity-80 transition" style={{backgroundColor: 'var(--bg-secondary)'}}>
-                  <Zap size={18} style={{color: 'var(--primary-600)'}} />
-                  <span className="text-sm">Buy Data</span>
-                </Link>
-                <Link to="/topup" className="flex items-center gap-3 p-3 rounded-lg hover:opacity-80 transition" style={{backgroundColor: 'var(--bg-secondary)'}}>
-                  <TrendingUp size={18} style={{color: 'var(--primary-600)'}} />
-                  <span className="text-sm">Top Up Wallet</span>
-                </Link>
-                <Link to="/transactions" className="flex items-center gap-3 p-3 rounded-lg hover:opacity-80 transition" style={{backgroundColor: 'var(--bg-secondary)'}}>
-                  <Clock size={18} style={{color: 'var(--primary-600)'}} />
-                  <span className="text-sm">View History</span>
-                </Link>
-              </div>
-            </div>
-
-            <div className="card p-6">
-              <h3 className="font-bold mb-4">Referral Bonus</h3>
-              <p className="text-sm mb-4" style={{color: 'var(--text-secondary)'}}>
-                {referralSettings
-                  ? `Earn GHS ${referralSettings.amountPerReferral} for every friend you refer. Share your code and grow your balance!`
-                  : 'Earn rewards for every friend you refer. Share your code and grow your balance!'}
-              </p>
-              <button
-                onClick={copyReferralCode}
-                className="btn btn-primary w-full text-sm"
-              >
-                Share Code
-              </button>
-            </div>
+                <div className="mt-4 text-center">
+                  <Link to="/transactions" className="btn btn-ghost text-xs sm:text-sm">
+                    View All Transactions
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
-
-        <div className="card p-8">
-          <h2 className="text-2xl font-bold mb-6">Recent Transactions</h2>
-          {loadingData ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
-              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Loading transactions...</p>
-            </div>
-          ) : recentTransactions.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>No transactions yet</p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{borderBottom: '1px solid var(--border-color)'}}>
-                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Type</th>
-                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Amount</th>
-                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Date</th>
-                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentTransactions.map(tx => (
-                      <tr key={tx.id} style={{borderBottom: '1px solid var(--border-color)'}}>
-                        <td className="py-3 px-4">{tx.type}</td>
-                        <td className="py-3 px-4 font-medium" style={{color: tx.rawAmount < 0 ? '#ef4444' : '#22c55e'}}>
-                          {tx.amount}
-                        </td>
-                        <td className="py-3 px-4">{tx.date}</td>
-                        <td className="py-3 px-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            tx.statusRaw === 'completed' 
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                              : tx.statusRaw === 'failed'
-                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                          }`}>
-                            ✓ {tx.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-4 text-center">
-                <Link to="/transactions" className="btn btn-ghost text-sm">
-                  View All Transactions
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
       </div>
     </UserLayout>
   );
