@@ -246,26 +246,51 @@ exports.getPurchases = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, status, network } = req.query;
     const skip = (page - 1) * limit;
 
-    const orders = await Order.find()
-      .populate('userId', 'name email')
+    const filter = {};
+    if (status) filter.status = status;
+    if (network) filter.network = network;
+
+    const orders = await Order.find(filter)
+      .populate('userId', 'name email phone')
       .populate('dataPlanId', 'network dataSize planName')
+      .populate('transactionId', 'reference amount status')
       .limit(parseInt(limit))
       .skip(skip)
       .sort({ createdAt: -1 });
 
-    const total = await Order.countDocuments();
+    const total = await Order.countDocuments(filter);
 
     res.status(200).json({
       success: true,
-      orders,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit),
+      data: {
+        orders: orders.map(order => ({
+          id: order._id,
+          orderNumber: order.orderNumber,
+          topzaOrderId: order.topzaOrderId,
+          status: order.status,
+          user: order.userId,
+          network: order.network,
+          phoneNumber: order.phoneNumber,
+          dataAmount: order.dataAmount,
+          planName: order.planName,
+          amount: order.amount,
+          paymentMethod: order.paymentMethod,
+          transactionReference: order.transactionReference,
+          paystackReference: order.paystackReference,
+          transaction: order.transactionId,
+          providerMessage: order.providerMessage,
+          errorMessage: order.errorMessage,
+          date: order.createdAt,
+        })),
+        pagination: {
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(total / limit),
+        },
       },
     });
   } catch (error) {

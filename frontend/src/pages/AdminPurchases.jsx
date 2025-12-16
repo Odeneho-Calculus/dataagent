@@ -21,8 +21,8 @@ export default function AdminPurchases() {
       const response = await adminAPI.getPurchases(page, 10);
 
       if (response.success) {
-        setPurchases(response.purchases);
-        setTotalPages(response.pagination.pages);
+        setPurchases(response.data?.purchases || response.purchases || []);
+        setTotalPages(response.data?.pagination?.pages || response.pagination?.pages || 0);
       }
     } catch (err) {
       setError(err?.message || 'Failed to fetch purchases');
@@ -99,14 +99,14 @@ export default function AdminPurchases() {
                     <tbody>
                       {purchases.map((purchase) => (
                         <tr
-                          key={purchase._id}
+                          key={purchase.id || purchase._id}
                           className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                         >
                           <td className="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">
-                            {purchase._id?.slice(-8) || 'N/A'}
+                            {(purchase.id || purchase._id)?.slice(-8) || 'N/A'}
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                            {purchase.userId?.name || purchase.userId || 'Unknown'}
+                            {purchase.user?.name || purchase.userId?.name || purchase.userId || 'Unknown'}
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                             {purchase.network || 'N/A'}
@@ -115,7 +115,7 @@ export default function AdminPurchases() {
                             GHS {purchase.amount?.toFixed(2) || '0.00'}
                           </td>
                           <td className="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">
-                            {purchase.phone || 'N/A'}
+                            {purchase.phoneNumber || purchase.phone || 'N/A'}
                           </td>
                           <td className="px-6 py-4 text-sm">
                             <span
@@ -131,7 +131,7 @@ export default function AdminPurchases() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                            {new Date(purchase.createdAt).toLocaleDateString()}
+                            {new Date(purchase.date || purchase.createdAt).toLocaleDateString()}
                           </td>
                         </tr>
                       ))}

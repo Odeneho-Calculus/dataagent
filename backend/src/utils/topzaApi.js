@@ -91,7 +91,7 @@ exports.fetchAllDataPlans = async () => {
 exports.purchaseDataBundle = async (dataPlanId, phoneNumber) => {
   try {
     const requestBody = {
-      planId: dataPlanId,
+      dataPlanId,
       quantity: 1,
       phoneNumber,
       paymentMethod: 'wallet',

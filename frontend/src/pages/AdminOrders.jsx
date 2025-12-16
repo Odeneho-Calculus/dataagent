@@ -17,8 +17,8 @@ export default function AdminOrders() {
       const response = await adminAPI.getOrders(page, 10);
 
       if (response.success) {
-        setOrders(response.orders);
-        setTotalPages(response.pagination.pages);
+        setOrders(response.data?.orders || response.orders || []);
+        setTotalPages(response.data?.pagination?.pages || response.pagination?.pages || 0);
       }
     } catch (err) {
       setError(err?.message || 'Failed to fetch orders');
@@ -109,7 +109,7 @@ export default function AdminOrders() {
                         <tbody>
                           {orders.map((order) => (
                             <tr
-                              key={order._id}
+                              key={order.id || order._id}
                               className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                             >
                               <td className="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">
@@ -117,8 +117,8 @@ export default function AdminOrders() {
                               </td>
                               <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">
                                 <div>
-                                  <p className="font-medium">{order.userId?.name || 'Unknown'}</p>
-                                  <p className="text-xs text-slate-500">{order.userId?.email || 'N/A'}</p>
+                                  <p className="font-medium">{order.user?.name || order.userId?.name || 'Unknown'}</p>
+                                  <p className="text-xs text-slate-500">{order.user?.email || order.userId?.email || 'N/A'}</p>
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
@@ -146,7 +146,7 @@ export default function AdminOrders() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                {new Date(order.createdAt).toLocaleDateString()}
+                                {new Date(order.date || order.createdAt).toLocaleDateString()}
                               </td>
                             </tr>
                           ))}

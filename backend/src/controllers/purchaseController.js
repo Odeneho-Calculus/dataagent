@@ -495,6 +495,8 @@ exports.verifyDataPurchase = async (req, res) => {
     order.providerMessage = topzaData.providerMessage;
     await order.save();
 
+    const updatedUser = await User.findById(req.userId);
+
     res.json({
       success: true,
       message: 'Data bundle purchased successfully',
@@ -502,7 +504,8 @@ exports.verifyDataPurchase = async (req, res) => {
         order: {
           id: order._id,
           orderNumber: order.orderNumber,
-          status: order.status,
+          topzaOrderId: topzaData.order?.id,
+          status: topzaData.order?.status || order.status,
           network: order.network,
           phoneNumber: order.phoneNumber,
           dataAmount: order.dataAmount,
@@ -513,8 +516,12 @@ exports.verifyDataPurchase = async (req, res) => {
         transaction: {
           id: transaction._id,
           reference: transaction.reference,
-          amount: transaction.amount,
+          amount: Math.abs(transaction.amount),
           status: transaction.status,
+        },
+        wallet: {
+          balance: updatedUser.balance,
+          previousBalance: updatedUser.balance + order.amount,
         },
         providerMessage: topzaData.providerMessage,
       },
@@ -540,6 +547,7 @@ exports.getOrders = async (req, res) => {
 
     const orders = await Order.find({ userId: req.userId })
       .populate('dataPlanId', 'network dataSize planName')
+      .populate('transactionId', 'reference amount status')
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(offset);
@@ -548,12 +556,29 @@ exports.getOrders = async (req, res) => {
 
     res.json({
       success: true,
-      orders,
-      pagination: {
-        limit,
-        offset,
-        total,
-        hasMore: offset + limit < total,
+      data: {
+        orders: orders.map(order => ({
+          id: order._id,
+          orderNumber: order.orderNumber,
+          topzaOrderId: order.topzaOrderId,
+          status: order.status,
+          network: order.network,
+          phoneNumber: order.phoneNumber,
+          dataAmount: order.dataAmount,
+          planName: order.planName,
+          amount: order.amount,
+          paymentMethod: order.paymentMethod,
+          transactionReference: order.transactionReference,
+          transaction: order.transactionId,
+          providerMessage: order.providerMessage,
+          date: order.createdAt,
+        })),
+        pagination: {
+          limit,
+          offset,
+          total,
+          hasMore: offset + limit < total,
+        },
       },
     });
   } catch (error) {
@@ -566,7 +591,9 @@ exports.getOrderById = async (req, res) => {
     const order = await Order.findOne({
       _id: req.params.id,
       userId: req.userId,
-    }).populate('dataPlanId', 'network dataSize planName');
+    })
+      .populate('dataPlanId', 'network dataSize planName')
+      .populate('transactionId', 'reference amount status');
 
     if (!order) {
       return res.status(404).json({
@@ -577,7 +604,24 @@ exports.getOrderById = async (req, res) => {
 
     res.json({
       success: true,
-      order,
+      data: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        topzaOrderId: order.topzaOrderId,
+        status: order.status,
+        network: order.network,
+        phoneNumber: order.phoneNumber,
+        dataAmount: order.dataAmount,
+        planName: order.planName,
+        amount: order.amount,
+        paymentMethod: order.paymentMethod,
+        transactionReference: order.transactionReference,
+        paystackReference: order.paystackReference,
+        transaction: order.transactionId,
+        providerMessage: order.providerMessage,
+        errorMessage: order.errorMessage,
+        date: order.createdAt,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -19,7 +19,7 @@ export default function Orders() {
       setLoading(true);
       const response = await purchases.getOrders(100, 0);
       if (response.success) {
-        setOrders(response.orders || []);
+        setOrders(response.data?.orders || response.orders || []);
       }
     } catch (err) {
       setError('Failed to load orders');
@@ -139,7 +139,7 @@ export default function Orders() {
                 </thead>
                 <tbody>
                   {filteredOrders.map(order => (
-                    <tr key={order._id} style={{borderBottom: '1px solid var(--border-color)'}}>
+                    <tr key={order.id || order._id} style={{borderBottom: '1px solid var(--border-color)'}}>
                       <td className="py-3 px-4 font-mono text-xs">{order.orderNumber?.slice(-8) || 'N/A'}</td>
                       <td className="py-3 px-4">
                         <div>
@@ -162,7 +162,7 @@ export default function Orders() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-xs" style={{color: 'var(--text-secondary)'}}>
-                        {new Date(order.createdAt).toLocaleDateString('en-CA')}
+                        {new Date(order.date || order.createdAt).toLocaleDateString('en-CA')}
                       </td>
                       <td className="py-3 px-4">
                         <button
@@ -229,7 +229,7 @@ export default function Orders() {
 
               <div className="flex justify-between items-center pb-3 border-b" style={{borderColor: 'var(--border-color)'}}>
                 <span style={{color: 'var(--text-secondary)'}}>Order Date</span>
-                <span className="text-sm">{new Date(selectedOrder.createdAt).toLocaleString('en-CA')}</span>
+                <span className="text-sm">{new Date(selectedOrder.date || selectedOrder.createdAt).toLocaleString('en-CA')}</span>
               </div>
 
               {selectedOrder.providerMessage && (
