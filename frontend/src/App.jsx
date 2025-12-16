@@ -15,6 +15,8 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminDataPlans from './pages/AdminDataPlans';
+import AdminOrders from './pages/AdminOrders';
+import AdminReferrals from './pages/AdminReferrals';
 import AdminTransactions from './pages/AdminTransactions';
 import AdminPurchases from './pages/AdminPurchases';
 
@@ -89,6 +91,22 @@ function App() {
               element={
                 <AdminProtectedRoute>
                   <AdminDataPlans />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <AdminProtectedRoute>
+                  <AdminOrders />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/referrals"
+              element={
+                <AdminProtectedRoute>
+                  <AdminReferrals />
                 </AdminProtectedRoute>
               }
             />

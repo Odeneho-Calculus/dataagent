@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, TrendingUp, ShoppingCart, Menu, X, Database } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, ShoppingCart, Menu, X, Database, Gift, Package } from 'lucide-react';
 
 export default function AdminSidebar({ isOpen, onClose }) {
   const location = useLocation();
@@ -9,6 +9,8 @@ export default function AdminSidebar({ isOpen, onClose }) {
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/users', label: 'Users', icon: Users },
     { path: '/admin/dataplans', label: 'Data Plans', icon: Database },
+    { path: '/admin/orders', label: 'Orders', icon: Package },
+    { path: '/admin/referrals', label: 'Referral Program', icon: Gift },
     { path: '/admin/transactions', label: 'Transactions', icon: TrendingUp },
     { path: '/admin/purchases', label: 'Purchases', icon: ShoppingCart },
   ];

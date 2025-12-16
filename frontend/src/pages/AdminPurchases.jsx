@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
-import axios from 'axios';
 import AdminSidebar from '../components/AdminSidebar';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { admin as adminAPI } from '../services/api';
 
 export default function AdminPurchases() {
   const [purchases, setPurchases] = useState([]);
@@ -20,18 +18,14 @@ export default function AdminPurchases() {
   const fetchPurchases = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/admin/purchases`, {
-        params: { page, limit: 10 },
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await adminAPI.getPurchases(page, 10);
 
-      if (response.data.success) {
-        setPurchases(response.data.purchases);
-        setTotalPages(response.data.pagination.pages);
+      if (response.success) {
+        setPurchases(response.purchases);
+        setTotalPages(response.pagination.pages);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch purchases');
+      setError(err?.message || 'Failed to fetch purchases');
     } finally {
       setLoading(false);
     }

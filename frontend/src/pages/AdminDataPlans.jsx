@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Menu, Edit2, Trash2, RefreshCw, X } from 'lucide-react';
-import axios from 'axios';
 import AdminSidebar from '../components/AdminSidebar';
 import { dataplans } from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
 export default function AdminDataPlans() {
-  const navigate = useNavigate();
-  const [plans, setPlans] = useState([]);
+  const [allPlans, setAllPlans] = useState([]);
+  const [filteredPlans, setFilteredPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState('');
@@ -23,14 +19,18 @@ export default function AdminDataPlans() {
 
   useEffect(() => {
     fetchDataPlans();
-  }, [selectedNetwork]);
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [selectedNetwork, searchTerm, allPlans]);
 
   const fetchDataPlans = async () => {
     try {
       setLoading(true);
-      const response = await dataplans.list(selectedNetwork, '');
+      const response = await dataplans.list('', '');
       if (response.success) {
-        setPlans(response.plans);
+        setAllPlans(response.plans);
       }
     } catch (err) {
       setError(err.message || 'Failed to fetch data plans');
@@ -39,13 +39,29 @@ export default function AdminDataPlans() {
     }
   };
 
+  const applyFilters = () => {
+    let result = allPlans;
+    
+    if (selectedNetwork) {
+      result = result.filter(plan => plan.network === selectedNetwork);
+    }
+    
+    if (searchTerm) {
+      result = result.filter(plan =>
+        plan.planName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredPlans(result);
+  };
+
   const handleSync = async () => {
     try {
       setSyncing(true);
       const response = await dataplans.sync();
       if (response.success) {
         alert(`Sync complete: ${response.stats.synced} new, ${response.stats.updated} updated`);
-        fetchDataPlans();
+        await fetchDataPlans();
       }
     } catch (err) {
       alert(`Sync failed: ${err.message}`);
@@ -64,7 +80,7 @@ export default function AdminDataPlans() {
     try {
       const response = await dataplans.updatePrices(editingId, editCost, editSelling);
       if (response.success) {
-        setPlans(plans.map(p => p._id === editingId ? response.plan : p));
+        setAllPlans(allPlans.map(p => p._id === editingId ? response.plan : p));
         setEditingId(null);
       }
     } catch (err) {
@@ -78,7 +94,7 @@ export default function AdminDataPlans() {
     try {
       const response = await dataplans.clearEdits(planId);
       if (response.success) {
-        setPlans(plans.map(p => p._id === planId ? response.plan : p));
+        setAllPlans(allPlans.map(p => p._id === planId ? response.plan : p));
       }
     } catch (err) {
       alert(`Failed to clear edits: ${err.message}`);
@@ -89,7 +105,7 @@ export default function AdminDataPlans() {
     try {
       const response = await dataplans.toggleStatus(planId);
       if (response.success) {
-        setPlans(plans.map(p => p._id === planId ? response.plan : p));
+        setAllPlans(allPlans.map(p => p._id === planId ? response.plan : p));
       }
     } catch (err) {
       alert(`Failed to toggle status: ${err.message}`);
@@ -103,7 +119,7 @@ export default function AdminDataPlans() {
       setDeleting(planId);
       const response = await dataplans.delete(planId);
       if (response.success) {
-        setPlans(plans.filter(p => p._id !== planId));
+        setAllPlans(allPlans.filter(p => p._id !== planId));
       }
     } catch (err) {
       alert(`Failed to delete plan: ${err.message}`);
@@ -117,11 +133,7 @@ export default function AdminDataPlans() {
     return (((costPrice - sellingPrice) / costPrice) * 100).toFixed(2);
   };
 
-  const filteredPlans = plans.filter(plan =>
-    plan.planName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const allNetworks = [...new Set(plans.map(p => p.network))].sort();
+  const allNetworks = [...new Set(allPlans.map(p => p.network))].sort();
 
   return (
     <div className="flex h-screen">
@@ -230,9 +242,16 @@ export default function AdminDataPlans() {
                     {filteredPlans.map(plan => {
                       const margin = ((plan.sellingPrice - plan.costPrice) / plan.costPrice * 100).toFixed(2);
                       return (
-                      <tr key={plan._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <tr key={plan._id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 ${!plan.inStock ? 'opacity-60 bg-slate-100 dark:bg-slate-800' : ''}`}>
                         <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{plan.network}</td>
-                        <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">{plan.planName}</td>
+                        <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">
+                          <div className="flex items-center gap-2">
+                            {plan.planName}
+                            {!plan.inStock && (
+                              <span className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs px-2 py-1 rounded">Out of Stock</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">{plan.dataSize}</td>
                         <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">GHS {plan.costPrice.toFixed(2)}</td>
                         <td className="px-6 py-4 text-sm font-medium text-blue-600 dark:text-blue-400">GHS {plan.sellingPrice.toFixed(2)}</td>
@@ -253,19 +272,21 @@ export default function AdminDataPlans() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleEditPrices(plan)}
-                              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
-                              title="Edit prices"
+                              disabled={!plan.inStock}
+                              className={`p-1 rounded ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                              title={!plan.inStock ? 'Cannot edit out-of-stock plans' : 'Edit prices'}
                             >
                               <Edit2 size={16} className="text-blue-600 dark:text-blue-400" />
                             </button>
                             <button
                               onClick={() => handleToggleStatus(plan._id)}
-                              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
-                              title="Toggle status"
+                              disabled={!plan.inStock}
+                              className={`p-1 rounded ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                              title={!plan.inStock ? 'Cannot toggle status for out-of-stock plans' : 'Toggle status'}
                             >
                               <RefreshCw size={16} className="text-green-600 dark:text-green-400" />
                             </button>
-                            {plan.isEdited && (
+                            {plan.isEdited && plan.inStock && (
                               <button
                                 onClick={() => handleClearEdits(plan._id)}
                                 className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-xs"
@@ -276,9 +297,9 @@ export default function AdminDataPlans() {
                             )}
                             <button
                               onClick={() => handleDelete(plan._id)}
-                              disabled={deleting === plan._id}
-                              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded disabled:opacity-50"
-                              title="Delete"
+                              disabled={deleting === plan._id || !plan.inStock}
+                              className={`p-1 rounded ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50'}`}
+                              title={!plan.inStock ? 'Cannot delete out-of-stock plans' : 'Delete'}
                             >
                               <Trash2 size={16} className="text-red-600 dark:text-red-400" />
                             </button>

@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, CheckCircle, AlertCircle } from 'lucide-react';
 import { dataplans } from '../services/api';
+import PurchaseModal from '../components/PurchaseModal';
+import PurchaseVerificationModal from '../components/PurchaseVerificationModal';
 
 const networkEmojis = {
   'MTN': '🔴',
@@ -12,17 +14,19 @@ const networkEmojis = {
 };
 
 export default function BuyData() {
-  const { user } = useAuth();
+  const { user, updateBalance } = useAuth();
   const [selectedNetwork, setSelectedNetwork] = useState('MTN');
   const [bundles, setBundles] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedBundle, setSelectedBundle] = useState(null);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [successDetails, setSuccessDetails] = useState(null);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationData, setVerificationData] = useState(null);
 
-  useEffect(() => {
-    fetchDataPlans();
-  }, []);
-
-  const fetchDataPlans = async () => {
+  const fetchDataPlans = useCallback(async () => {
     try {
       setLoading(true);
       const response = await dataplans.list('', 'active');
@@ -35,20 +39,73 @@ export default function BuyData() {
           setSelectedNetwork(networks[0]);
         }
       }
-    } catch (err) {
+    } catch (error) {
       setError('Failed to load data plans');
-      console.error(err);
+      console.error(error);
     } finally {
       setLoading(false);
     }
+  }, [selectedNetwork]);
+
+  useEffect(() => {
+    fetchDataPlans();
+  }, [fetchDataPlans]);
+
+  useEffect(() => {
+    const pending = localStorage.getItem('pendingPurchaseVerification');
+    if (pending) {
+      const { reference, orderId } = JSON.parse(pending);
+      setVerificationData({ reference, orderId });
+      setShowVerificationModal(true);
+    }
+  }, []);
+
+  const handlePurchaseClick = (bundle) => {
+    setSelectedBundle(bundle);
+    setShowPurchaseModal(true);
+    setError('');
   };
 
-  const handlePurchase = (bundle) => {
-    if (user.balance < bundle.sellingPrice) {
-      alert('Insufficient balance. Please top up your wallet.');
-      return;
+  const handlePurchaseSuccess = (data) => {
+    setShowPurchaseModal(false);
+    setSuccessMessage('Purchase completed successfully!');
+    setSuccessDetails(data);
+    
+    if (updateBalance && data.wallet) {
+      updateBalance(data.wallet.balance);
     }
-    alert(`Purchasing ${bundle.dataSize} on ${selectedNetwork} for GHS ${bundle.sellingPrice.toFixed(2)}`);
+
+    setTimeout(() => {
+      setSuccessMessage(null);
+      setSuccessDetails(null);
+    }, 8000);
+
+    fetchDataPlans();
+  };
+
+  const handleVerificationSuccess = (result) => {
+    setShowVerificationModal(false);
+    setVerificationData(null);
+    localStorage.removeItem('pendingPurchaseVerification');
+    
+    setSuccessMessage('Purchase completed successfully!');
+    setSuccessDetails(result.data);
+    
+    if (updateBalance && result.data?.order) {
+      updateBalance(result.data.order.balance);
+    }
+
+    setTimeout(() => {
+      setSuccessMessage(null);
+      setSuccessDetails(null);
+    }, 8000);
+
+    fetchDataPlans();
+  };
+
+  const handleVerificationError = () => {
+    localStorage.removeItem('pendingPurchaseVerification');
+    setError('Payment verification failed. Please check your transactions.');
   };
 
   if (loading) {
@@ -70,9 +127,28 @@ export default function BuyData() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-8">Buy Data Bundles</h1>
 
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300">
+            <div className="flex items-start gap-3">
+              <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold">{successMessage}</p>
+                {successDetails && (
+                  <div className="mt-2 text-sm space-y-1">
+                    <p>Order #{successDetails.order?.orderNumber}</p>
+                    <p>{successDetails.order?.dataAmount} {successDetails.order?.network} to {successDetails.order?.phoneNumber}</p>
+                    <p className="font-semibold">Status: {successDetails.order?.status}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 flex items-start gap-3">
+            <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+            <div>{error}</div>
           </div>
         )}
 
@@ -118,7 +194,7 @@ export default function BuyData() {
                       <div className="flex justify-between items-center">
                         <p className="text-xl font-bold text-primary-600">GHS {bundle.sellingPrice.toFixed(2)}</p>
                         <button
-                          onClick={() => handlePurchase(bundle)}
+                          onClick={() => handlePurchaseClick(bundle)}
                           className="btn btn-primary text-sm flex items-center gap-2"
                         >
                           <ShoppingCart size={16} />
@@ -136,6 +212,27 @@ export default function BuyData() {
               <p className="text-3xl font-bold text-primary-600">GHS {user?.balance?.toFixed(2) || '0.00'}</p>
             </div>
           </>
+        )}
+
+        <PurchaseModal
+          bundle={selectedBundle}
+          isOpen={showPurchaseModal}
+          onClose={() => setShowPurchaseModal(false)}
+          userBalance={user?.balance || 0}
+          onPurchaseSuccess={handlePurchaseSuccess}
+        />
+
+        {verificationData && (
+          <PurchaseVerificationModal
+            isOpen={showVerificationModal}
+            reference={verificationData.reference}
+            onClose={() => {
+              setShowVerificationModal(false);
+              setVerificationData(null);
+            }}
+            onSuccess={handleVerificationSuccess}
+            onError={handleVerificationError}
+          />
         )}
       </div>
     </div>

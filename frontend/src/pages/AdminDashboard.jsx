@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, TrendingUp, Activity, ShoppingCart, Menu } from 'lucide-react';
-import axios from 'axios';
+import { Users, TrendingUp, Activity, ShoppingCart, Menu, Gift } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { admin as adminAPI } from '../services/api';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -19,16 +17,12 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/admin/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.data.success) {
-        setStats(response.data.stats);
+      const response = await adminAPI.getDashboardStats();
+      if (response.success) {
+        setStats(response.stats);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch stats');
+      setError(err?.message || 'Failed to fetch stats');
     } finally {
       setLoading(false);
     }
@@ -70,6 +64,12 @@ export default function AdminDashboard() {
       icon: ShoppingCart,
       action: () => navigate('/admin/purchases'),
     },
+    {
+      title: 'Referral Earnings',
+      value: `GHS ${stats?.totalReferralEarnings?.toFixed(2) || '0.00'}`,
+      icon: Gift,
+      action: () => navigate('/admin/referrals'),
+    },
   ];
 
   // Use a neutral, theme-aware gradient for all stat cards to keep a unified look
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {statCards.map((card, idx) => {
             const Icon = card.icon;
             return (
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
                       {card.title}
                     </p>
                     <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                      {card.value.toLocaleString()}
+                      {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}
                     </p>
                   </div>
                   <div className="w-10 h-10 p-2 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -169,12 +169,18 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <button
             onClick={() => navigate('/admin/users')}
             className="btn btn-primary py-3 rounded-lg font-medium transition"
           >
             Manage Users
+          </button>
+          <button
+            onClick={() => navigate('/admin/referrals')}
+            className="btn btn-secondary py-3 rounded-lg font-medium transition"
+          >
+            Manage Referrals
           </button>
           <button
             onClick={() => navigate('/admin/transactions')}

@@ -52,6 +52,11 @@ export const purchases = {
   create: (data) => api.post('/purchases/create', data),
   list: (limit = 50, offset = 0) =>
     api.get(`/purchases/list?limit=${limit}&offset=${offset}`),
+  buyDataBundle: (data) => api.post('/purchases/buy', data),
+  verifyPurchase: (data) => api.post('/purchases/verify', data),
+  getOrders: (limit = 50, offset = 0) =>
+    api.get(`/purchases/orders?limit=${limit}&offset=${offset}`),
+  getOrderById: (id) => api.get(`/purchases/orders/${id}`),
 };
 
 export const user = {
@@ -59,17 +64,39 @@ export const user = {
   updateProfile: (data) => api.put('/user/profile', data),
 };
 
+export const publicAPI = {
+  getReferralSettings: () => api.get('/public/referral-settings'),
+};
+
 export const admin = {
   getDashboardStats: () => api.get('/admin/stats'),
   getAllUsers: (page = 1, limit = 10, role = 'user', search = '') =>
     api.get(`/admin/users?page=${page}&limit=${limit}&role=${role}&search=${search}`),
   getUserById: (id) => api.get(`/admin/users/${id}`),
+  getFullUserInfo: (id) => api.get(`/admin/users/${id}/full-info`),
   updateUserRole: (id, role) => api.patch(`/admin/users/${id}/role`, { role }),
   toggleUserStatus: (id) => api.patch(`/admin/users/${id}/toggle-status`),
+  banUser: (id, banReason = '') => api.patch(`/admin/users/${id}/ban`, { banReason }),
+  unbanUser: (id) => api.patch(`/admin/users/${id}/unban`),
+  suspendUser: (id, days) => api.patch(`/admin/users/${id}/suspend`, { days }),
+  unsuspendUser: (id) => api.patch(`/admin/users/${id}/unsuspend`),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  restoreUser: (id) => api.patch(`/admin/users/${id}/restore`),
   getTransactions: (page = 1, limit = 10) =>
     api.get(`/admin/transactions?page=${page}&limit=${limit}`),
   getPurchases: (page = 1, limit = 10) =>
     api.get(`/admin/purchases?page=${page}&limit=${limit}`),
+  getOrders: (page = 1, limit = 10) =>
+    api.get(`/admin/orders?page=${page}&limit=${limit}`),
+  getReferralStats: () => api.get('/admin/referrals/stats'),
+  getAllReferrals: (page = 1, limit = 10, search = '') =>
+    api.get(`/admin/referrals?page=${page}&limit=${limit}&search=${search}`),
+  updateReferralEarnings: (id, earnings) =>
+    api.patch(`/admin/referrals/${id}/earnings`, { earnings }),
+  resetReferralCode: (id) => api.patch(`/admin/referrals/${id}/reset-code`),
+  resetAllReferralEarnings: () => api.patch('/admin/referrals/reset-all/earnings'),
+  getReferralSettings: () => api.get('/admin/referrals/settings'),
+  updateReferralSettings: (settings) => api.patch('/admin/referrals/settings', settings),
 };
 
 export const dataplans = {

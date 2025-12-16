@@ -41,11 +41,28 @@ exports.syncDataPlans = async (req, res) => {
       });
 
       if (existingPlan) {
+        // Always update non-price fields from API
+        existingPlan.planName = plan.planName;
+        existingPlan.dataSize = plan.dataAmount;
+        existingPlan.dataAmountInMB = plan.dataAmountInMB;
+        existingPlan.validity = plan.validity;
+        existingPlan.category = plan.category;
+        existingPlan.inStock = plan.inStock;
+        existingPlan.isActive = plan.isActive;
+        existingPlan.discount = plan.discount;
+
+        // Disable plan if out of stock
+        if (!plan.inStock) {
+          existingPlan.status = 'inactive';
+        }
+
+        // Only update prices if not edited by admin
         if (!existingPlan.isEdited) {
           existingPlan.costPrice = costPrice;
           existingPlan.originalCostPrice = costPrice;
           existingPlan.sellingPrice = costPrice;
         }
+        
         existingPlan.lastSyncedAt = new Date();
         await existingPlan.save();
         updated++;
@@ -54,11 +71,16 @@ exports.syncDataPlans = async (req, res) => {
           network,
           planName: plan.planName,
           dataSize: plan.dataAmount,
+          dataAmountInMB: plan.dataAmountInMB,
           validity: plan.validity,
+          category: plan.category,
           apiPlanId: plan.id || plan._id,
           costPrice,
           sellingPrice: costPrice,
           originalCostPrice: costPrice,
+          inStock: plan.inStock,
+          isActive: plan.isActive,
+          discount: plan.discount,
           lastSyncedAt: new Date(),
         });
         synced++;
@@ -154,6 +176,13 @@ exports.updateDataPlanPrices = async (req, res) => {
       });
     }
 
+    if (!plan.inStock) {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot modify out-of-stock data plans. This plan is unavailable from the provider.',
+      });
+    }
+
     if (costPrice !== undefined) {
       plan.costPrice = parseFloat(costPrice);
     }
@@ -193,6 +222,13 @@ exports.clearDataPlanEdits = async (req, res) => {
       });
     }
 
+    if (!plan.inStock) {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot modify out-of-stock data plans. This plan is unavailable from the provider.',
+      });
+    }
+
     plan.costPrice = plan.originalCostPrice;
     plan.sellingPrice = plan.originalCostPrice;
     plan.isEdited = false;
@@ -219,6 +255,13 @@ exports.toggleDataPlanStatus = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Data plan not found',
+      });
+    }
+
+    if (!plan.inStock) {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot modify out-of-stock data plans. This plan is unavailable from the provider.',
       });
     }
 

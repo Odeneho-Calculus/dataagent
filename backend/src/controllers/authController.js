@@ -37,6 +37,7 @@ exports.register = async (req, res) => {
         email: user.email,
         name: user.name,
         balance: user.balance,
+        referralCode: user.referralCode,
         role: user.role,
       },
     });
@@ -67,6 +68,33 @@ exports.login = async (req, res) => {
       });
     }
 
+    if (user.deletedAt) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Your account has been deleted' 
+      });
+    }
+
+    if (user.status === 'banned') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Your account has been banned. Reason: ' + (user.banReason || 'No reason provided') 
+      });
+    }
+
+    if (user.status === 'suspended') {
+      if (user.suspendedUntil && new Date() >= user.suspendedUntil) {
+        user.status = 'active';
+        user.suspendedUntil = null;
+        await user.save();
+      } else {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Your account is suspended until ' + (user.suspendedUntil ? new Date(user.suspendedUntil).toLocaleDateString() : 'further notice') 
+        });
+      }
+    }
+
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({ 
@@ -85,6 +113,7 @@ exports.login = async (req, res) => {
         email: user.email,
         name: user.name,
         balance: user.balance,
+        referralCode: user.referralCode,
         role: user.role,
       },
     });

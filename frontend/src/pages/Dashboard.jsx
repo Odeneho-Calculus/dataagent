@@ -2,17 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Copy, TrendingUp, Clock, Zap } from 'lucide-react';
-import { dataplans } from '../services/api';
+import { dataplans, wallet, purchases, publicAPI } from '../services/api';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [dataBundles, setDataBundles] = useState([]);
   const [loadingBundles, setLoadingBundles] = useState(true);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [stats, setStats] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [referralSettings, setReferralSettings] = useState(null);
 
   useEffect(() => {
-    fetchActiveBundles();
+    fetchDashboardData();
+    fetchReferralSettings();
   }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoadingData(true);
+      await Promise.all([
+        fetchActiveBundles(),
+        fetchTransactionsAndStats(),
+      ]);
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+    } finally {
+      setLoadingData(false);
+      setLoadingBundles(false);
+    }
+  };
 
   const fetchActiveBundles = async () => {
     try {
@@ -22,8 +42,90 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error('Failed to fetch bundles:', err);
-    } finally {
-      setLoadingBundles(false);
+    }
+  };
+
+  const fetchTransactionsAndStats = async () => {
+    try {
+      const [transactionsRes, purchasesRes] = await Promise.all([
+        wallet.getTransactions(10, 0),
+        purchases.list(10, 0),
+      ]);
+
+      const transactions = transactionsRes.success ? transactionsRes.transactions || [] : [];
+      const purchasesList = purchasesRes.success ? purchasesRes.purchases || [] : [];
+
+      const combined = [
+        ...transactions.map(tx => ({
+          id: tx._id,
+          type: tx.type === 'wallet_topup' ? 'Wallet Top-up' : 
+                tx.type === 'referral_bonus' ? 'Referral Bonus' : 'Refund',
+          amount: `${tx.amount > 0 ? '+' : ''}GHS ${Math.abs(tx.amount).toFixed(2)}`,
+          date: new Date(tx.createdAt),
+          dateStr: formatDate(new Date(tx.createdAt)),
+          status: tx.status.charAt(0).toUpperCase() + tx.status.slice(1),
+        })),
+        ...purchasesList.map(purchase => ({
+          id: purchase._id,
+          type: 'Data Purchase',
+          amount: `-GHS ${purchase.price.toFixed(2)}`,
+          date: new Date(purchase.createdAt),
+          dateStr: formatDate(new Date(purchase.createdAt)),
+          status: purchase.status.charAt(0).toUpperCase() + purchase.status.slice(1),
+        })),
+      ]
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 6)
+        .map(({ dateStr, ...rest }) => ({ ...rest, date: dateStr }));
+
+      setRecentTransactions(combined);
+
+      const totalSpent = purchasesList.reduce((sum, p) => sum + (p.price || 0), 0);
+      const dataUsed = purchasesList.reduce((sum, p) => sum + (p.gb || 0), 0);
+      const referralEarnings = transactions
+        .filter(tx => tx.type === 'referral_bonus')
+        .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+
+      const newStats = [
+        { label: 'Total Spent', value: `GHS ${totalSpent.toFixed(2)}`, icon: '💳' },
+        { label: 'Data Used', value: `${dataUsed}GB`, icon: '📊' },
+        { label: 'Referral Earnings', value: `GHS ${referralEarnings.toFixed(2)}`, icon: '👥' },
+      ];
+
+      setStats(newStats);
+    } catch (err) {
+      console.error('Failed to fetch transactions and stats:', err);
+      setRecentTransactions([]);
+      setStats([
+        { label: 'Total Spent', value: 'GHS 0.00', icon: '💳' },
+        { label: 'Data Used', value: '0GB', icon: '📊' },
+        { label: 'Referral Earnings', value: 'GHS 0.00', icon: '👥' },
+      ]);
+    }
+  };
+
+  const formatDate = (date) => {
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+
+    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const fetchReferralSettings = async () => {
+    try {
+      const response = await publicAPI.getReferralSettings();
+      if (response.success) {
+        setReferralSettings(response.settings);
+      }
+    } catch (err) {
+      console.error('Failed to fetch referral settings:', err);
     }
   };
 
@@ -34,18 +136,6 @@ export default function Dashboard() {
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
-  const recentTransactions = [
-    { id: 1, type: 'Data Purchase', amount: '-GHS 4.99', date: '2 hours ago', status: 'Completed' },
-    { id: 2, type: 'Wallet Top-up', amount: '+GHS 50.00', date: '1 day ago', status: 'Completed' },
-    { id: 3, type: 'Data Purchase', amount: '-GHS 8.99', date: '3 days ago', status: 'Completed' },
-  ];
-
-  const stats = [
-    { label: 'Total Spent', value: 'GHS 1,250.50', icon: '💳' },
-    { label: 'Data Used', value: '45.5GB', icon: '📊' },
-    { label: 'Referrals', value: '12', icon: '👥' },
-  ];
 
   return (
     <div className="min-h-screen" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
@@ -91,13 +181,20 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {stats.map((stat, idx) => (
-            <div key={idx} className="card p-6">
-              <div className="text-3xl mb-3">{stat.icon}</div>
-              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{stat.label}</p>
-              <p className="text-xl font-bold mt-2">{stat.value}</p>
+          {loadingData ? (
+            <div className="col-span-3 text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
+              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Loading stats...</p>
             </div>
-          ))}
+          ) : (
+            stats.map((stat, idx) => (
+              <div key={idx} className="card p-6">
+                <div className="text-3xl mb-3">{stat.icon}</div>
+                <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{stat.label}</p>
+                <p className="text-xl font-bold mt-2">{stat.value}</p>
+              </div>
+            ))
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -164,7 +261,9 @@ export default function Dashboard() {
             <div className="card p-6">
               <h3 className="font-bold mb-4">Referral Bonus</h3>
               <p className="text-sm mb-4" style={{color: 'var(--text-secondary)'}}>
-                Earn GHS 1 for every friend you refer. Share your code and grow your balance!
+                {referralSettings
+                  ? `Earn GHS ${referralSettings.amountPerReferral} for every friend you refer. Share your code and grow your balance!`
+                  : 'Earn rewards for every friend you refer. Share your code and grow your balance!'}
               </p>
               <button
                 onClick={copyReferralCode}
@@ -178,37 +277,50 @@ export default function Dashboard() {
 
         <div className="card p-8">
           <h2 className="text-2xl font-bold mb-6">Recent Transactions</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{borderBottom: '1px solid var(--border-color)'}}>
-                  <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Type</th>
-                  <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Amount</th>
-                  <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Date</th>
-                  <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTransactions.map(tx => (
-                  <tr key={tx.id} style={{borderBottom: '1px solid var(--border-color)'}}>
-                    <td className="py-3 px-4">{tx.type}</td>
-                    <td className="py-3 px-4 font-medium">{tx.amount}</td>
-                    <td className="py-3 px-4">{tx.date}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-1 rounded text-xs" style={{backgroundColor: 'var(--bg-secondary)'}}>
-                        {tx.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-4 text-center">
-            <Link to="/transactions" className="btn btn-ghost text-sm">
-              View All Transactions
-            </Link>
-          </div>
+          {loadingData ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
+              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Loading transactions...</p>
+            </div>
+          ) : recentTransactions.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>No transactions yet</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr style={{borderBottom: '1px solid var(--border-color)'}}>
+                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Type</th>
+                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Amount</th>
+                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Date</th>
+                      <th className="text-left py-3 px-4" style={{color: 'var(--text-secondary)'}}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentTransactions.map(tx => (
+                      <tr key={tx.id} style={{borderBottom: '1px solid var(--border-color)'}}>
+                        <td className="py-3 px-4">{tx.type}</td>
+                        <td className="py-3 px-4 font-medium">{tx.amount}</td>
+                        <td className="py-3 px-4">{tx.date}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-1 rounded text-xs" style={{backgroundColor: 'var(--bg-secondary)'}}>
+                            {tx.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 text-center">
+                <Link to="/transactions" className="btn btn-ghost text-sm">
+                  View All Transactions
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

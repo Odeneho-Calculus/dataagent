@@ -3,40 +3,140 @@ const axios = require('axios');
 const TOPZA_BASE_URL = process.env.TOPZA_BASE_URL || 'https://topza.culustech.com/api';
 const TOPZA_API_KEY = process.env.TOPZA_API_KEY;
 
-console.log('[Topza API] Base URL:', TOPZA_BASE_URL);
-console.log('[Topza API] API Key set:', !!TOPZA_API_KEY);
-
 const topzaApi = axios.create({
   baseURL: TOPZA_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'X-API-Key': TOPZA_API_KEY,
-  },
   timeout: 10000,
 });
 
+topzaApi.interceptors.request.use((config) => {
+  config.headers['X-API-Key'] = TOPZA_API_KEY;
+  config.headers['Content-Type'] = 'application/json';
+  return config;
+});
+
+exports.getWalletBalance = async () => {
+  try {
+    const response = await topzaApi.get('/v1/wallet/balance');
+    
+    console.log('[Topza API] Wallet balance response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      balance: response.data?.data?.balance,
+    });
+    
+    if (response.data && response.data.success) {
+      const balance = response.data.data?.balance || 0;
+      
+      if (balance === undefined || balance === null || balance === 0) {
+        console.error('[Topza API] Unable to extract balance from response:', response.data);
+        return {
+          success: false,
+          balance: 0,
+          error: 'Unable to extract balance from response',
+        };
+      }
+      
+      console.log('[Topza API] Balance fetched successfully:', balance);
+      return {
+        success: true,
+        balance,
+      };
+    }
+    
+    const errorMsg = response.data?.message || 'Failed to fetch wallet balance';
+    console.error('[Topza API] Wallet balance failed:', {
+      success: response.data?.success,
+      message: errorMsg,
+    });
+    
+    return {
+      success: false,
+      balance: 0,
+      error: errorMsg,
+    };
+  } catch (error) {
+    console.error('[Topza API] Error fetching wallet balance:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    
+    return {
+      success: false,
+      balance: 0,
+      error: error.response?.data?.message || error.message || 'Failed to fetch wallet balance',
+    };
+  }
+};
+
 exports.fetchAllDataPlans = async () => {
   try {
-    console.log('[Topza API] Fetching from:', TOPZA_BASE_URL + '/v1/dataplans');
     const response = await topzaApi.get('/v1/dataplans');
-    console.log('[Topza API] Response status:', response.status);
-    console.log('[Topza API] Response data success:', response.data?.success);
     
     if (response.data && response.data.success && Array.isArray(response.data.data)) {
-      console.log('[Topza API] Plans found:', response.data.data.length);
       return response.data.data;
     }
     
-    console.log('[Topza API] Invalid response structure');
     return [];
   } catch (error) {
-    console.error('[Topza API] Error Details:');
-    console.error('  Message:', error.message);
-    console.error('  Status:', error.response?.status);
-    console.error('  Status Text:', error.response?.statusText);
-    console.error('  Data:', error.response?.data);
-    console.error('  Code:', error.code);
+    console.error('[Topza API] Error fetching data plans:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
     return [];
+  }
+};
+
+exports.purchaseDataBundle = async (dataPlanId, phoneNumber) => {
+  try {
+    const requestBody = {
+      planId: dataPlanId,
+      quantity: 1,
+      phoneNumber,
+      paymentMethod: 'wallet',
+    };
+    
+    console.log('[Topza API] Sending purchase request:', requestBody);
+    
+    const response = await topzaApi.post('/v1/orders/buy', requestBody);
+    
+    console.log('[Topza API] Purchase response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      message: response.data?.message,
+      data: response.data?.data,
+    });
+    
+    if (response.data && response.data.success) {
+      console.log('[Topza API] Purchase successful');
+      return {
+        success: true,
+        data: response.data.data,
+      };
+    }
+    
+    const errorMsg = response.data?.message || 'Purchase failed';
+    console.error('[Topza API] Purchase failed:', {
+      message: errorMsg,
+      code: response.data?.code,
+    });
+    
+    return {
+      success: false,
+      error: errorMsg,
+    };
+  } catch (error) {
+    console.error('[Topza API] Error during purchase:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message || 'Purchase failed',
+    };
   }
 };
 

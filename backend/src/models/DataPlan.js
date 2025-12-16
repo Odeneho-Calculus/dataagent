@@ -15,9 +15,17 @@ const dataPlanSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    dataAmountInMB: {
+      type: Number,
+      default: null,
+    },
     validity: {
       type: String,
       required: true,
+    },
+    category: {
+      type: String,
+      default: null,
     },
     apiPlanId: {
       type: String,
@@ -38,6 +46,18 @@ const dataPlanSchema = new mongoose.Schema(
     isEdited: {
       type: Boolean,
       default: false,
+    },
+    inStock: {
+      type: Boolean,
+      default: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
     status: {
       type: String,

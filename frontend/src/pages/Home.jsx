@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { dataplans } from '../services/api';
+import { dataplans, publicAPI } from '../services/api';
 
 export default function Home() {
   const { user } = useAuth();
   const [plans, setPlans] = useState([]);
   const [networks, setNetworks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [referralSettings, setReferralSettings] = useState(null);
 
   useEffect(() => {
     fetchActivePlans();
+    fetchReferralSettings();
   }, []);
 
   const fetchActivePlans = async () => {
@@ -35,11 +37,28 @@ export default function Home() {
     }
   };
 
+  const fetchReferralSettings = async () => {
+    try {
+      const response = await publicAPI.getReferralSettings();
+      if (response.success) {
+        setReferralSettings(response.settings);
+      }
+    } catch (err) {
+      console.error('Failed to fetch referral settings:', err);
+    }
+  };
+
   const features = [
     { icon: '⚡', title: 'Instant Delivery', desc: 'Get data within seconds of purchase' },
     { icon: '💯', title: 'Best Rates', desc: 'Lowest prices compared to direct purchase' },
     { icon: '🔒', title: 'Secure Transactions', desc: 'Bank-level security for all payments' },
-    { icon: '🎁', title: 'Referral Rewards', desc: 'Earn GHS 1 per successful referral' },
+    {
+      icon: '🎁',
+      title: 'Referral Rewards',
+      desc: referralSettings
+        ? `Earn GHS ${referralSettings.amountPerReferral} per successful referral`
+        : 'Earn rewards per successful referral',
+    },
     { icon: '📊', title: 'Track Everything', desc: 'View all your purchases and transactions' },
     { icon: '💳', title: 'Multiple Payment', desc: 'Accept MTN Mobile Money, Vodafone Cash' },
   ];

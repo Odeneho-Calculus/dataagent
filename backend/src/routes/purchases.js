@@ -4,6 +4,20 @@ const User = require('../models/User');
 const Purchase = require('../models/Purchase');
 const Transaction = require('../models/Transaction');
 const { protect } = require('../middleware/auth');
+const {
+  buyDataBundle,
+  verifyDataPurchase,
+  getOrders,
+  getOrderById,
+} = require('../controllers/purchaseController');
+
+router.post('/buy', protect, buyDataBundle);
+
+router.post('/verify', protect, verifyDataPurchase);
+
+router.get('/orders', protect, getOrders);
+
+router.get('/orders/:id', protect, getOrderById);
 
 router.post('/create', protect, async (req, res) => {
   try {
