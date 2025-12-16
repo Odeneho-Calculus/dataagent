@@ -154,8 +154,8 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
 
     const transaction = await Transaction.create({
       userId: req.userId,
-      type: 'wallet_topup',
-      amount: -plan.sellingPrice,
+      type: 'data_purchase',
+      amount: 0,
       reference: topzaData.transaction?.reference || 'TXN' + Date.now(),
       paystackReference: null,
       status: 'completed',
@@ -261,8 +261,8 @@ const handlePaystackPayment = async (req, res, user, plan, order) => {
 
     const transaction = await Transaction.create({
       userId: req.userId,
-      type: 'wallet_topup',
-      amount: -plan.sellingPrice,
+      type: 'data_purchase',
+      amount: 0,
       reference,
       status: 'pending',
       description: `Data purchase: ${plan.dataSize} ${plan.network} to ${order.phoneNumber}`,
@@ -489,17 +489,20 @@ exports.verifyDataPurchase = async (req, res) => {
 
     const planData = await DataPlan.findById(order.dataPlanId);
     
-    await User.findByIdAndUpdate(
-      req.userId,
-      { 
-        $inc: { 
-          balance: -order.amount,
-          totalSpent: order.amount,
-          dataUsed: parseFloat(planData?.dataSize) || parseFloat(order.dataAmount) || 0
-        } 
-      },
-      { new: true }
-    );
+    const updateData = { 
+      $inc: { 
+        totalSpent: order.amount,
+        dataUsed: parseFloat(planData?.dataSize) || parseFloat(order.dataAmount) || 0
+      } 
+    };
+
+    // Only deduct from wallet if payment was made via wallet
+    // For Paystack, user already paid Paystack, not wallet
+    if (order.paymentMethod === 'wallet') {
+      updateData.$inc.balance = -order.amount;
+    }
+    
+    await User.findByIdAndUpdate(req.userId, updateData, { new: true });
 
     order.status = 'processing';
     order.topzaOrderId = topzaData.order?.id;
