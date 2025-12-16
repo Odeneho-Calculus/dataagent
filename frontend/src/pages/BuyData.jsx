@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSearchParams } from 'react-router-dom';
 import { ShoppingCart, CheckCircle, AlertCircle } from 'lucide-react';
 import { dataplans } from '../services/api';
 import PurchaseModal from '../components/PurchaseModal';
@@ -16,6 +17,7 @@ const networkEmojis = {
 
 export default function BuyData() {
   const { user, updateBalance } = useAuth();
+  const [searchParams] = useSearchParams();
   const [selectedNetwork, setSelectedNetwork] = useState('MTN');
   const [bundles, setBundles] = useState({});
   const [loading, setLoading] = useState(true);
@@ -26,6 +28,7 @@ export default function BuyData() {
   const [successDetails, setSuccessDetails] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationData, setVerificationData] = useState(null);
+  const [initializedFromParams, setInitializedFromParams] = useState(false);
 
   const fetchDataPlans = useCallback(async () => {
     try {
@@ -51,6 +54,23 @@ export default function BuyData() {
   useEffect(() => {
     fetchDataPlans();
   }, [fetchDataPlans]);
+
+  useEffect(() => {
+    if (!loading && !initializedFromParams) {
+      const planId = searchParams.get('planId');
+      const network = searchParams.get('network');
+      
+      if (planId && network && bundles[network]) {
+        setSelectedNetwork(network);
+        const bundle = bundles[network].find(b => b._id === planId);
+        if (bundle) {
+          setSelectedBundle(bundle);
+          setShowPurchaseModal(true);
+        }
+        setInitializedFromParams(true);
+      }
+    }
+  }, [loading, bundles, searchParams, initializedFromParams]);
 
   useEffect(() => {
     const pending = localStorage.getItem('pendingPurchaseVerification');

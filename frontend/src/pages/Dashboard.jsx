@@ -196,15 +196,15 @@ export default function Dashboard() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
             {loadingData ? (
-              <div className="col-span-3 text-center py-6 sm:py-8">
+              <div className="col-span-2 text-center py-6 sm:py-8">
                 <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
                 <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>Loading stats...</p>
               </div>
             ) : (
               stats.map((stat, idx) => (
-                <div key={idx} className="card p-4 sm:p-5 lg:p-6">
+                <div key={idx} className={`card p-4 sm:p-5 lg:p-6 ${idx === stats.length - 1 ? 'col-span-2' : ''}`}>
                   <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">{stat.icon}</div>
                   <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>{stat.label}</p>
                   <p className="text-base sm:text-lg lg:text-xl font-bold mt-1 sm:mt-2 truncate">{stat.value}</p>
@@ -220,9 +220,6 @@ export default function Dashboard() {
               <div className="card p-4 sm:p-6 lg:p-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
                   <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Available Data Bundles</h2>
-                  <Link to="/buy-data" className="btn btn-primary text-xs sm:text-sm whitespace-nowrap">
-                    Buy Now
-                  </Link>
                 </div>
                 {loadingBundles ? (
                   <div className="text-center py-6 sm:py-8">
@@ -234,9 +231,13 @@ export default function Dashboard() {
                     <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>No active data plans available</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     {dataBundles.map(bundle => (
-                      <div key={bundle._id} className="p-3 sm:p-4 rounded-lg" style={{backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'}}>
+                      <Link 
+                        key={bundle._id} 
+                        to={`/buy-data?planId=${bundle._id}&planName=${encodeURIComponent(bundle.planName)}&dataSize=${encodeURIComponent(bundle.dataSize)}&price=${bundle.sellingPrice}&network=${bundle.network}`}
+                        className="p-3 sm:p-4 rounded-lg hover:opacity-80 transition cursor-pointer" 
+                        style={{backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)'}}>
                         <div className="flex justify-between items-start gap-2 mb-2 sm:mb-3">
                           <div className="min-w-0 flex-1">
                             <h3 className="font-bold text-sm sm:text-base truncate">{bundle.planName}</h3>
@@ -246,11 +247,8 @@ export default function Dashboard() {
                             {bundle.network}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center gap-2">
-                          <p className="font-bold text-primary-600 text-sm sm:text-base truncate">GHS {bundle.sellingPrice.toFixed(2)}</p>
-                          <Link to="/buy-data" className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0">Get</Link>
-                        </div>
-                      </div>
+                        <p className="font-bold text-primary-600 text-sm sm:text-base truncate">GHS {bundle.sellingPrice.toFixed(2)}</p>
+                      </Link>
                     ))}
                   </div>
                 )}
