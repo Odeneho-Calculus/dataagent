@@ -152,6 +152,8 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
 
     const topzaData = topzaResponse.data;
 
+    console.log('[Wallet Payment] Full Topza response:', JSON.stringify(topzaData, null, 2));
+
     const transaction = await Transaction.create({
       userId: req.userId,
       type: 'data_purchase',
@@ -479,6 +481,8 @@ exports.verifyDataPurchase = async (req, res) => {
     }
 
     const topzaData = topzaResponse.data;
+
+    console.log('[Verify Data Purchase] Full Topza response:', JSON.stringify(topzaData, null, 2));
 
     const transaction = await Transaction.findOne({ reference });
     if (transaction) {
