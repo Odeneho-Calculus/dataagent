@@ -3,10 +3,19 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/database');
+const { startOrderStatusSyncJob } = require('./jobs/orderStatusSync');
 
 const app = express();
 
 connectDB();
+
+if (process.env.ORDER_SYNC_ENABLED !== 'false') {
+  try {
+    startOrderStatusSyncJob();
+  } catch (error) {
+    console.error('Failed to initialize order sync job:', error.message);
+  }
+}
 
 const allowedOrigins = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())

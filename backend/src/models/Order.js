@@ -73,8 +73,34 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+    completedBy: {
+      type: String,
+      enum: ['admin', 'system'],
+      default: null,
+    },
+    adminNotes: {
+      type: String,
+      default: null,
+    },
+    statusHistory: [
+      {
+        status: String,
+        updatedAt: Date,
+        source: String,
+        notes: String,
+      },
+    ],
   },
   { timestamps: true }
 );
+
+orderSchema.index({ userId: 1, createdAt: -1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ network: 1 });
+orderSchema.index({ topzaOrderId: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);

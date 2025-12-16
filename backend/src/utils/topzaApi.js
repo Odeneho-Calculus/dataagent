@@ -140,4 +140,109 @@ exports.purchaseDataBundle = async (dataPlanId, phoneNumber) => {
   }
 };
 
+exports.checkOrdersStatus = async (orderIds) => {
+  try {
+    if (!Array.isArray(orderIds) || orderIds.length === 0) {
+      return {
+        success: false,
+        error: 'orderIds must be a non-empty array',
+      };
+    }
+
+    if (orderIds.length > 100) {
+      return {
+        success: false,
+        error: 'Maximum 100 orders can be checked at once',
+      };
+    }
+
+    const requestBody = { orderIds };
+    
+    console.log('[Topza API] Checking status for', orderIds.length, 'orders');
+    
+    const response = await topzaApi.post('/v1/orders/check-status', requestBody);
+    
+    console.log('[Topza API] Bulk status check response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      count: response.data?.count,
+    });
+    
+    if (response.data && response.data.success) {
+      console.log('[Topza API] Bulk status check successful');
+      return {
+        success: true,
+        data: response.data.data,
+        notFound: response.data.notFound || [],
+      };
+    }
+    
+    const errorMsg = response.data?.message || 'Failed to check order status';
+    console.error('[Topza API] Status check failed:', {
+      message: errorMsg,
+      code: response.data?.code,
+    });
+    
+    return {
+      success: false,
+      error: errorMsg,
+    };
+  } catch (error) {
+    console.error('[Topza API] Error checking order status:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message || 'Failed to check order status',
+    };
+  }
+};
+
+exports.getOrderStatus = async (orderId) => {
+  try {
+    console.log('[Topza API] Getting status for order:', orderId);
+    
+    const response = await topzaApi.get(`/v1/orders/${orderId}/status`);
+    
+    console.log('[Topza API] Order status response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      status: response.data?.data?.status,
+    });
+    
+    if (response.data && response.data.success) {
+      console.log('[Topza API] Order status retrieved successfully');
+      return {
+        success: true,
+        data: response.data.data,
+      };
+    }
+    
+    const errorMsg = response.data?.message || 'Failed to get order status';
+    console.error('[Topza API] Get order status failed:', {
+      message: errorMsg,
+      code: response.data?.code,
+    });
+    
+    return {
+      success: false,
+      error: errorMsg,
+    };
+  } catch (error) {
+    console.error('[Topza API] Error getting order status:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message || 'Failed to get order status',
+    };
+  }
+};
+
 module.exports = exports;

@@ -86,8 +86,14 @@ export const admin = {
     api.get(`/admin/transactions?page=${page}&limit=${limit}`),
   getPurchases: (page = 1, limit = 10) =>
     api.get(`/admin/purchases?page=${page}&limit=${limit}`),
-  getOrders: (page = 1, limit = 10) =>
-    api.get(`/admin/orders?page=${page}&limit=${limit}`),
+  getOrders: (page = 1, limit = 10, status = '', network = '') =>
+    api.get(`/admin/orders?page=${page}&limit=${limit}&status=${status}&network=${network}`),
+  syncOrdersFromTopza: () => api.post('/admin/orders/sync-topza'),
+  updateOrderStatus: (id, status, adminNotes = '') =>
+    api.patch(`/admin/orders/${id}/status`, { status, adminNotes }),
+  deleteOrder: (id) => api.delete(`/admin/orders/${id}`),
+  bulkDeleteOrdersByStatus: (status) =>
+    api.post('/admin/orders/bulk-delete', { status }),
   getReferralStats: () => api.get('/admin/referrals/stats'),
   getAllReferrals: (page = 1, limit = 10, search = '') =>
     api.get(`/admin/referrals?page=${page}&limit=${limit}&search=${search}`),

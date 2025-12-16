@@ -24,6 +24,10 @@ const {
   resetAllReferralEarnings,
   getReferralSettings,
   updateReferralSettings,
+  syncOrderStatusesFromTopza,
+  updateOrderStatus,
+  deleteOrder,
+  bulkDeleteOrdersByStatus,
 } = require('../controllers/adminController');
 
 router.use(protect, adminOnly);
@@ -43,6 +47,10 @@ router.patch('/users/:id/restore', restoreUser);
 router.get('/transactions', getTransactions);
 router.get('/purchases', getPurchases);
 router.get('/orders', getOrders);
+router.post('/orders/sync-topza', syncOrderStatusesFromTopza);
+router.patch('/orders/:id/status', updateOrderStatus);
+router.delete('/orders/:id', deleteOrder);
+router.post('/orders/bulk-delete', bulkDeleteOrdersByStatus);
 
 router.get('/referrals/settings', getReferralSettings);
 router.patch('/referrals/settings', updateReferralSettings);

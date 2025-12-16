@@ -754,3 +754,147 @@ exports.updateReferralSettings = async (req, res) => {
     });
   }
 };
+
+exports.syncOrderStatusesFromTopza = async (req, res) => {
+  try {
+    const { syncOrderStatusesFromTopza } = require('../jobs/orderStatusSync');
+    
+    const result = await syncOrderStatusesFromTopza();
+
+    res.status(200).json({
+      success: result.success,
+      message: result.message,
+      data: result.data,
+    });
+  } catch (error) {
+    console.error('syncOrderStatusesFromTopza error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { status, adminNotes } = req.body;
+    const orderId = req.params.id;
+
+    if (!['pending', 'processing', 'completed', 'failed'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be pending, processing, completed, or failed',
+      });
+    }
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    const oldStatus = order.status;
+    order.status = status;
+    
+    if (adminNotes) {
+      order.adminNotes = adminNotes;
+    }
+
+    if (status === 'completed' && !order.completedAt) {
+      order.completedAt = new Date();
+      order.completedBy = 'admin';
+    }
+
+    if (!order.statusHistory) {
+      order.statusHistory = [];
+    }
+
+    order.statusHistory.push({
+      status,
+      updatedAt: new Date(),
+      source: 'admin',
+      notes: adminNotes || null,
+    });
+
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Order status updated from ${oldStatus} to ${status}`,
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        adminNotes: order.adminNotes,
+        completedAt: order.completedAt,
+        completedBy: order.completedBy,
+      },
+    });
+  } catch (error) {
+    console.error('updateOrderStatus error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await Order.findByIdAndDelete(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Order deleted successfully',
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+      },
+    });
+  } catch (error) {
+    console.error('deleteOrder error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.bulkDeleteOrdersByStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!['pending', 'processing', 'completed', 'failed'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be pending, processing, completed, or failed',
+      });
+    }
+
+    const result = await Order.deleteMany({ status });
+
+    res.status(200).json({
+      success: true,
+      message: `Deleted ${result.deletedCount} orders with status: ${status}`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error('bulkDeleteOrdersByStatus error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
