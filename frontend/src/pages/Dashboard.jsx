@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Copy, TrendingUp, Clock, Zap } from 'lucide-react';
+import { CreditCardIcon, ChartBarIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { dataplans, wallet, purchases, publicAPI } from '../services/api';
 import UserLayout from '../components/UserLayout';
 
@@ -99,9 +100,9 @@ export default function Dashboard() {
       setRecentTransactions(combined);
 
       const newStats = [
-        { label: 'Total Spent', value: `GHS ${(user?.totalSpent || 0).toFixed(2)}`, icon: '💳' },
-        { label: 'Data Used', value: `${user?.dataUsed || 0}GB`, icon: '📊' },
-        { label: 'Referral Earnings', value: `GHS ${(user?.referralEarnings || 0).toFixed(2)}`, icon: '👥' },
+        { label: 'Total Spent', value: `GHS ${(user?.totalSpent || 0).toFixed(2)}`, icon: 'card' },
+        { label: 'Data Used', value: `${user?.dataUsed || 0}GB`, icon: 'chart' },
+        { label: 'Referral Earnings', value: `GHS ${(user?.referralEarnings || 0).toFixed(2)}`, icon: 'users' },
       ];
 
       setStats(newStats);
@@ -109,9 +110,9 @@ export default function Dashboard() {
       console.error('Failed to fetch transactions and stats:', err);
       setRecentTransactions([]);
       setStats([
-        { label: 'Total Spent', value: `GHS ${(user?.totalSpent || 0).toFixed(2)}`, icon: '💳' },
-        { label: 'Data Used', value: `${user?.dataUsed || 0}GB`, icon: '📊' },
-        { label: 'Referral Earnings', value: `GHS ${(user?.referralEarnings || 0).toFixed(2)}`, icon: '👥' },
+        { label: 'Total Spent', value: `GHS ${(user?.totalSpent || 0).toFixed(2)}`, icon: 'card' },
+        { label: 'Data Used', value: `${user?.dataUsed || 0}GB`, icon: 'chart' },
+        { label: 'Referral Earnings', value: `GHS ${(user?.referralEarnings || 0).toFixed(2)}`, icon: 'users' },
       ]);
     }
   };
@@ -205,7 +206,11 @@ export default function Dashboard() {
             ) : (
               stats.map((stat, idx) => (
                 <div key={idx} className={`card p-4 sm:p-5 lg:p-6 ${idx === stats.length - 1 ? 'col-span-2' : ''}`}>
-                  <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">{stat.icon}</div>
+                  <div className="mb-2 sm:mb-3">
+                    {stat.icon === 'card' && <CreditCardIcon className="w-8 h-8 sm:w-10 sm:h-10" />}
+                    {stat.icon === 'chart' && <ChartBarIcon className="w-8 h-8 sm:w-10 sm:h-10" />}
+                    {stat.icon === 'users' && <UserGroupIcon className="w-8 h-8 sm:w-10 sm:h-10" />}
+                  </div>
                   <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>{stat.label}</p>
                   <p className="text-base sm:text-lg lg:text-xl font-bold mt-1 sm:mt-2 truncate">{stat.value}</p>
                 </div>

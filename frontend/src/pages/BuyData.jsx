@@ -58,8 +58,17 @@ export default function BuyData() {
         if (bundle) {
           setSelectedBundle(bundle);
           setShowPurchaseModal(true);
+          setInitializedFromParams(true);
         }
-        setInitializedFromParams(true);
+      } else if (planId && network && Object.keys(bundles).length > 0) {
+        const allBundles = Object.values(bundles).flat();
+        const foundBundle = allBundles.find(b => b._id === planId);
+        if (foundBundle && foundBundle.network === network) {
+          setSelectedNetwork(network);
+          setSelectedBundle(foundBundle);
+          setShowPurchaseModal(true);
+          setInitializedFromParams(true);
+        }
       }
     }
   }, [loading, bundles, searchParams, initializedFromParams]);

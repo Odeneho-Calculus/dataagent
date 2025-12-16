@@ -39,6 +39,9 @@ exports.register = async (req, res) => {
         balance: user.balance,
         referralCode: user.referralCode,
         role: user.role,
+        totalSpent: user.totalSpent,
+        dataUsed: user.dataUsed,
+        referralEarnings: user.referralEarnings,
       },
     });
   } catch (error) {
@@ -115,6 +118,9 @@ exports.login = async (req, res) => {
         balance: user.balance,
         referralCode: user.referralCode,
         role: user.role,
+        totalSpent: user.totalSpent,
+        dataUsed: user.dataUsed,
+        referralEarnings: user.referralEarnings,
       },
     });
   } catch (error) {
@@ -138,6 +144,9 @@ exports.getProfile = async (req, res) => {
         balance: user.balance,
         referralCode: user.referralCode,
         role: user.role,
+        totalSpent: user.totalSpent,
+        dataUsed: user.dataUsed,
+        referralEarnings: user.referralEarnings,
       },
     });
   } catch (error) {
