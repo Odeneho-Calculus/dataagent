@@ -22,7 +22,7 @@ const allowedOrigins = process.env.CORS_ORIGIN
   : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
 
 app.use(cors({ 
-  origin: process.env.NODE_ENV === 'development' ? allowedOrigins : process.env.CORS_ORIGIN,
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
