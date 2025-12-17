@@ -311,3 +311,42 @@ exports.deleteDataPlan = async (req, res) => {
     });
   }
 };
+
+exports.getPublicActivePlans = async (req, res) => {
+  try {
+    const { limit = 10, offset = 0 } = req.query;
+    const skip = parseInt(offset);
+    const query = { status: 'active', inStock: true };
+
+    const total = await DataPlan.countDocuments(query);
+    const plans = await DataPlan.find(query)
+      .sort({ network: 1, createdAt: 1 })
+      .limit(parseInt(limit))
+      .skip(skip);
+
+    const groupedByNetwork = plans.reduce((acc, plan) => {
+      if (!acc[plan.network]) {
+        acc[plan.network] = [];
+      }
+      acc[plan.network].push(plan);
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      success: true,
+      plans,
+      grouped: groupedByNetwork,
+      count: plans.length,
+      pagination: {
+        total,
+        limit: parseInt(limit),
+        offset: skip,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

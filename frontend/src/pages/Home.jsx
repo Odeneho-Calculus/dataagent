@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { dataplans, publicAPI } from '../services/api';
+import { publicAPI } from '../services/api';
 import {
   BoltIcon,
   CheckCircleIcon,
@@ -27,7 +27,7 @@ export default function Home() {
 
   const fetchActivePlans = async () => {
     try {
-      const response = await dataplans.list('', 'active');
+      const response = await publicAPI.getActivePlans(10, 0);
       if (response.success && response.plans) {
         setPlans(response.plans.slice(0, 6));
         
