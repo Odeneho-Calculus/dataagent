@@ -28,6 +28,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+  if (req.path.endsWith('.jsx') || req.path.endsWith('.js')) {
+    res.type('application/javascript');
+  }
+  next();
+});
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/wallet', require('./routes/wallet'));
