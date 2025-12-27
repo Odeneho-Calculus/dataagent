@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SidebarProvider } from './context/SidebarContext';
@@ -22,14 +22,14 @@ import AdminReferrals from './pages/AdminReferrals';
 import AdminTransactions from './pages/AdminTransactions';
 import AdminPurchases from './pages/AdminPurchases';
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <SidebarProvider>
-          <Router>
-            <Navbar />
-          <Routes>
+    <>
+      {!isAdminRoute && <Navbar />}
+      <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -137,9 +137,20 @@ function App() {
                 </AdminProtectedRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <SidebarProvider>
+          <Router>
+            <AppContent />
+          </Router>
         </SidebarProvider>
       </AuthProvider>
     </ThemeProvider>

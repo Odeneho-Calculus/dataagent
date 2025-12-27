@@ -26,9 +26,13 @@ export default function UserSidebar({ isOpen, onClose }) {
       />
 
       <aside
-        className={`fixed top-0 left-0 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-40 transition-transform ${
+        className={`fixed top-0 left-0 h-screen w-64 z-40 transition-transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
+        style={{
+          backgroundColor: 'var(--bg-primary)',
+          borderRight: '1px solid var(--border-color)'
+        }}
       >
         <div className="h-full flex flex-col">
           <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
