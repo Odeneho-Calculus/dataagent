@@ -3,20 +3,11 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/database');
-const { startOrderStatusSyncJob } = require('./jobs/orderStatusSync');
 const { startTopzaBalanceCheckJob } = require('./jobs/topzaBalanceCheck');
 
 const app = express();
 
 connectDB();
-
-if (process.env.ORDER_SYNC_ENABLED !== 'false') {
-  try {
-    startOrderStatusSyncJob();
-  } catch (error) {
-    console.error('Failed to initialize order sync job:', error.message);
-  }
-}
 
 if (process.env.TOPZA_BALANCE_CHECK_ENABLED !== 'false') {
   try {

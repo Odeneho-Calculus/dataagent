@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Menu, RotateCcw, Eye, Edit2, Trash2, X, Check, AlertCircle } from 'lucide-react';
+import { Menu, Eye, Edit2, Trash2, X, Check, AlertCircle } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import Pagination from '../components/Pagination';
 import { admin as adminAPI } from '../services/api';
@@ -8,7 +8,6 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [syncing, setSyncing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const [page, setPage] = useState(1);
@@ -49,26 +48,6 @@ export default function AdminOrders() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-
-  const handleSyncFromTopza = async () => {
-    try {
-      setSyncing(true);
-      setError('');
-      const response = await adminAPI.syncOrdersFromTopza();
-
-      if (response.success) {
-        setError('');
-        await fetchOrders();
-        alert(`Sync completed!\n\nUpdated: ${response.data?.updated || 0} orders\nUnchanged: ${response.data?.unchanged || 0} orders`);
-      } else {
-        setError(response.message || 'Sync failed');
-      }
-    } catch (err) {
-      setError(err?.message || 'Sync failed');
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
@@ -183,15 +162,6 @@ export default function AdminOrders() {
               )}
 
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <button
-                  onClick={handleSyncFromTopza}
-                  disabled={syncing}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 transition"
-                >
-                  <RotateCcw size={18} className={syncing ? 'animate-spin' : ''} />
-                  {syncing ? 'Syncing...' : 'Sync from TOPZA'}
-                </button>
-
                 <button
                   onClick={() => setShowBulkDeleteModal(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition"

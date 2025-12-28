@@ -10,7 +10,6 @@ const orderSchema = new mongoose.Schema(
     dataPlanId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'DataPlan',
-      required: true,
     },
     orderNumber: {
       type: String,
@@ -20,7 +19,6 @@ const orderSchema = new mongoose.Schema(
     network: {
       type: String,
       enum: ['MTN', 'TELECEL', 'AIRTELTIGO'],
-      required: true,
     },
     phoneNumber: {
       type: String,
@@ -28,11 +26,9 @@ const orderSchema = new mongoose.Schema(
     },
     dataAmount: {
       type: String,
-      required: true,
     },
     planName: {
       type: String,
-      required: true,
     },
     amount: {
       type: Number,
@@ -40,8 +36,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['wallet', 'paystack'],
-      required: true,
+      enum: ['wallet', 'paystack', 'store'],
     },
     status: {
       type: String,
@@ -82,6 +77,15 @@ const orderSchema = new mongoose.Schema(
       enum: ['admin', 'system'],
       default: null,
     },
+    adminModified: {
+      type: Boolean,
+      default: false,
+    },
+    adminModifiedAt: {
+      type: Date,
+      default: null,
+    },
+    adminModifiedFields: [String],
     adminNotes: {
       type: String,
       default: null,
@@ -94,6 +98,36 @@ const orderSchema = new mongoose.Schema(
         notes: String,
       },
     ],
+    source: {
+      type: String,
+      enum: ['direct', 'store', 'api'],
+      default: 'direct',
+    },
+    apiPartnerName: {
+      type: String,
+      default: null,
+    },
+    isGuest: {
+      type: Boolean,
+      default: false,
+    },
+    guestInfo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Guest',
+      default: null,
+    },
+    dataBundle: {
+      dataPlanId: String,
+      network: String,
+      planName: String,
+      dataAmount: String,
+      amount: Number,
+      phoneNumber: String,
+    },
+    autoCompletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

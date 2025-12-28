@@ -271,6 +271,50 @@ exports.getOrderStatus = async (orderId) => {
   }
 };
 
+exports.getOrderByReference = async (orderNumber) => {
+  try {
+    console.log('[Topza API] Getting order by reference:', orderNumber);
+    
+    const response = await topzaApi.get(`/v1/orders/reference/${orderNumber}`);
+    
+    console.log('[Topza API] Get by reference response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      orderId: response.data?.data?.orderId,
+    });
+    
+    if (response.data && response.data.success) {
+      console.log('[Topza API] Order retrieved by reference successfully');
+      return {
+        success: true,
+        data: response.data.data,
+      };
+    }
+    
+    const errorMsg = response.data?.message || 'Order not found';
+    console.error('[Topza API] Get by reference failed:', {
+      message: errorMsg,
+      code: response.data?.code,
+    });
+    
+    return {
+      success: false,
+      error: errorMsg,
+    };
+  } catch (error) {
+    console.error('[Topza API] Error getting order by reference:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message || 'Failed to get order by reference',
+    };
+  }
+};
+
 exports.getWalletTransactions = async (page = 1, limit = 20, filters = {}) => {
   try {
     const params = {

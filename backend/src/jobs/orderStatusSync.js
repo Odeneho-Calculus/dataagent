@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const Order = require('../models/Order');
-const { checkOrdersStatus } = require('../utils/topzaApi');
+const { checkOrdersStatus, getOrderByReference } = require('../utils/topzaApi');
 
 let isSyncing = false;
 
@@ -28,41 +28,69 @@ const syncOrderStatusesFromTopza = async () => {
 
     console.log('[Order Sync] Starting TOPZA order status synchronization...');
 
-    const orders = await Order.find({ topzaOrderId: { $exists: true, $ne: null } });
+    const allOrders = await Order.find({
+      status: { $in: ['pending', 'processing'] },
+    });
 
-    if (orders.length === 0) {
-      console.log('[Order Sync] No orders with topzaOrderId found');
+    if (allOrders.length === 0) {
+      console.log('[Order Sync] No pending/processing orders found');
       isSyncing = false;
       return {
         success: true,
         message: 'No orders to sync',
         data: {
           totalOrders: 0,
-          matched: 0,
+          synced: 0,
           updated: 0,
           unchanged: 0,
-          notMatched: 0,
           errors: 0,
           duration: `${Date.now() - startTime}ms`,
         },
       };
     }
 
-    console.log(`[Order Sync] Found ${orders.length} orders to sync`);
+    console.log(`[Order Sync] Found ${allOrders.length} pending/processing orders`);
 
-    const orderIds = orders
-      .map(order => order.topzaOrderId)
-      .filter(id => id && id !== 'null' && id !== 'undefined');
-    
-    if (orderIds.length === 0) {
-      console.log('[Order Sync] No valid topzaOrderIds found. All orders may have null values.');
+    const ordersWithValidTopzaId = [];
+    const ordersRequiringLookup = [];
+
+    for (const order of allOrders) {
+      if (order.topzaOrderId && typeof order.topzaOrderId === 'string' && order.topzaOrderId.trim().length > 0) {
+        ordersWithValidTopzaId.push(order);
+      } else {
+        ordersRequiringLookup.push(order);
+      }
+    }
+
+    console.log(`[Order Sync] ${ordersWithValidTopzaId.length} orders have topzaOrderId, ${ordersRequiringLookup.length} need lookup`);
+
+    for (const order of ordersRequiringLookup) {
+      try {
+        console.log(`[Order Sync] Looking up order on Topza by reference: ${order.orderNumber}`);
+        const result = await getOrderByReference(order.orderNumber);
+
+        if (result.success && result.data?.orderId) {
+          order.topzaOrderId = result.data.orderId;
+          await order.save();
+          console.log(`[Order Sync] Found and saved topzaOrderId for ${order.orderNumber} → ${result.data.orderId}`);
+          ordersWithValidTopzaId.push(order);
+        } else {
+          console.warn(`[Order Sync] Could not find order on Topza: ${order.orderNumber}`, result.error);
+        }
+      } catch (err) {
+        console.error(`[Order Sync] Error looking up ${order.orderNumber}:`, err.message);
+      }
+    }
+
+    if (ordersWithValidTopzaId.length === 0) {
+      console.log('[Order Sync] No orders with valid topzaOrderId to sync');
       isSyncing = false;
       return {
         success: true,
         message: 'No valid orders to sync',
         data: {
-          totalOrders: orders.length,
-          validOrderIds: 0,
+          totalOrders: allOrders.length,
+          synced: 0,
           updated: 0,
           unchanged: 0,
           errors: 0,
@@ -70,8 +98,12 @@ const syncOrderStatusesFromTopza = async () => {
         },
       };
     }
-    
-    console.log(`[Order Sync] Found ${orderIds.length} valid topzaOrderIds out of ${orders.length} orders`);
+
+    console.log(`[Order Sync] Syncing status for ${ordersWithValidTopzaId.length} orders`);
+
+    const orderIds = ordersWithValidTopzaId
+      .map(order => order.topzaOrderId)
+      .filter(id => id && id !== 'null' && id !== 'undefined' && typeof id === 'string' && id.trim().length > 0);
 
     let updated = 0;
     let unchanged = 0;
@@ -94,7 +126,7 @@ const syncOrderStatusesFromTopza = async () => {
 
       for (const topzaOrder of topzaOrders) {
         try {
-          const localOrder = orders.find(o => o.topzaOrderId === topzaOrder.orderId);
+          const localOrder = ordersWithValidTopzaId.find(o => o.topzaOrderId === topzaOrder.orderId);
           
           if (!localOrder) {
             console.warn('[Order Sync] Local order not found for TOPZA order:', topzaOrder.orderId);
@@ -102,27 +134,48 @@ const syncOrderStatusesFromTopza = async () => {
           }
 
           const newStatus = mapTopzaStatusToLocal(topzaOrder.status);
+          let statusChanged = false;
+          let metadataChanged = false;
+
+          const updateData = {
+            $push: {
+              statusHistory: {
+                status: newStatus,
+                updatedAt: new Date(),
+                source: 'topza-sync',
+              },
+            },
+          };
 
           if (localOrder.status !== newStatus) {
-            const updateData = {
-              status: newStatus,
-              $push: {
-                statusHistory: {
-                  status: newStatus,
-                  updatedAt: new Date(),
-                  source: 'topza-sync',
-                },
-              },
-            };
+            updateData.status = newStatus;
+            statusChanged = true;
+          }
 
-            if (newStatus === 'completed' && !localOrder.completedAt) {
-              updateData.completedAt = new Date();
-              updateData.completedBy = 'system';
-            }
+          if (newStatus === 'completed' && !localOrder.completedAt) {
+            updateData.completedAt = new Date();
+            updateData.completedBy = 'system';
+            statusChanged = true;
+          }
 
+          if (localOrder.source !== topzaOrder.source) {
+            updateData.source = topzaOrder.source;
+            metadataChanged = true;
+            console.log(`[Order Sync] Updated source for ${localOrder.orderNumber}: ${localOrder.source} → ${topzaOrder.source}`);
+          }
+
+          if (localOrder.apiPartnerName !== topzaOrder.apiPartnerName) {
+            updateData.apiPartnerName = topzaOrder.apiPartnerName;
+            metadataChanged = true;
+            console.log(`[Order Sync] Updated apiPartnerName for ${localOrder.orderNumber}: ${localOrder.apiPartnerName} → ${topzaOrder.apiPartnerName}`);
+          }
+
+          if (statusChanged || metadataChanged) {
             await Order.findByIdAndUpdate(localOrder._id, updateData);
             
-            console.log(`[Order Sync] Updated order ${localOrder.orderNumber}: ${localOrder.status} → ${newStatus}`);
+            if (statusChanged) {
+              console.log(`[Order Sync] Updated order ${localOrder.orderNumber}: ${localOrder.status} → ${newStatus}`);
+            }
             updated++;
           } else {
             unchanged++;
@@ -135,6 +188,19 @@ const syncOrderStatusesFromTopza = async () => {
 
       if (result.notFound && result.notFound.length > 0) {
         console.warn('[Order Sync] Orders not found in TOPZA:', result.notFound);
+        for (const notFoundId of result.notFound) {
+          const failedOrder = ordersWithValidTopzaId.find(o => o.topzaOrderId === notFoundId);
+          if (failedOrder) {
+            console.warn('[Order Sync] Failed order details:', {
+              localId: failedOrder._id,
+              orderNumber: failedOrder.orderNumber,
+              topzaOrderId: failedOrder.topzaOrderId,
+              source: failedOrder.source,
+              apiPartnerName: failedOrder.apiPartnerName,
+              status: failedOrder.status,
+            });
+          }
+        }
       }
     }
 
@@ -145,7 +211,10 @@ const syncOrderStatusesFromTopza = async () => {
       success: true,
       message: 'Order synchronization completed',
       data: {
-        totalOrders: orders.length,
+        totalOrdersFound: allOrders.length,
+        ordersWithTopzaId: ordersWithValidTopzaId.length,
+        ordersLookedUpOnTopza: ordersRequiringLookup.length,
+        synced: orderIds.length,
         updated,
         unchanged,
         errors,

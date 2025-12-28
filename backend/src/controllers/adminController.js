@@ -883,13 +883,14 @@ exports.updateReferralSettings = async (req, res) => {
 
 exports.syncOrderStatusesFromTopza = async (req, res) => {
   try {
+    console.log('[Admin] Manual order sync triggered by admin');
     const { syncOrderStatusesFromTopza } = require('../jobs/orderStatusSync');
     
     const result = await syncOrderStatusesFromTopza();
 
     res.status(200).json({
       success: result.success,
-      message: result.message,
+      message: 'Manual order sync completed. Use the order status update endpoint to manually change statuses.',
       data: result.data,
     });
   } catch (error) {
