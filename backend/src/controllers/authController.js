@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { createNotification } = require('./notificationController');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -28,6 +29,20 @@ exports.register = async (req, res) => {
 
     const user = await User.create({ email, password, name, phone });
     const token = generateToken(user._id);
+
+    await createNotification({
+      type: 'user_created',
+      title: 'New User Registration',
+      message: `New user ${name} (${email}) has registered`,
+      description: `A new user account has been created with email: ${email}. Referral code: ${user.referralCode}`,
+      severity: 'info',
+      data: {
+        userId: user._id,
+        userName: name,
+        userEmail: email,
+      },
+      actionUrl: `/admin/users/${user._id}`,
+    });
 
     res.status(201).json({
       success: true,

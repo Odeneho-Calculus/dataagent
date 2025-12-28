@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, TrendingUp, ShoppingCart, Menu, X, Database, Gift, Package, Wallet } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, ShoppingCart, Menu, X, Database, Gift, Package, Wallet, Bell } from 'lucide-react';
 
 export default function AdminSidebar({ isOpen, onClose }) {
   const location = useLocation();
@@ -14,6 +14,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
     { path: '/admin/referrals', label: 'Referral Program', icon: Gift },
     { path: '/admin/purchases', label: 'Purchases', icon: ShoppingCart },
     { path: '/admin/topza-settings', label: 'Topza Wallet', icon: Wallet },
+    { path: '/admin/notifications', label: 'Notifications', icon: Bell },
   ];
 
   const isActive = (path) => location.pathname === path;

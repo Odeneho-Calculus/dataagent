@@ -4,6 +4,7 @@ const Order = require('../models/Order');
 const DataPlan = require('../models/DataPlan');
 const Transaction = require('../models/Transaction');
 const { purchaseDataBundle, getWalletBalance } = require('../utils/topzaApi');
+const { createNotification } = require('./notificationController');
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_BASE_URL = process.env.PAYSTACK_BASE_URL || 'https://api.paystack.co';
@@ -184,6 +185,29 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
     await order.save();
 
     const updatedUser = await User.findById(req.userId);
+
+    await createNotification({
+      type: 'data_purchase',
+      title: 'Data Purchase Completed',
+      message: `${plan.dataSize} ${plan.network} data purchased for ${order.phoneNumber}`,
+      description: `Successfully purchased ${plan.planName} (${plan.dataSize}) for GHS ${plan.sellingPrice.toFixed(2)}. Phone: ${order.phoneNumber}`,
+      severity: 'success',
+      data: {
+        userId: req.userId,
+        userName: user.name,
+        userEmail: user.email,
+        amount: plan.sellingPrice,
+        purchaseType: plan.network,
+        orderId: order._id.toString(),
+        metadata: {
+          network: plan.network,
+          phoneNumber: order.phoneNumber,
+          dataSize: plan.dataSize,
+          planName: plan.planName,
+        },
+      },
+      actionUrl: `/admin/orders/${order._id}`,
+    });
 
     res.status(200).json({
       success: true,
@@ -517,6 +541,28 @@ exports.verifyDataPurchase = async (req, res) => {
     await order.save();
 
     const updatedUser = await User.findById(req.userId);
+
+    await createNotification({
+      type: 'data_purchase',
+      title: 'Data Purchase Verified',
+      message: `${order.dataAmount} ${order.network} data verified for ${order.phoneNumber}`,
+      description: `Data purchase has been verified and processed. Plan: ${order.planName} (${order.dataAmount}). Amount: GHS ${order.amount.toFixed(2)}`,
+      severity: 'success',
+      data: {
+        userId: req.userId,
+        amount: order.amount,
+        purchaseType: order.network,
+        orderId: order._id.toString(),
+        metadata: {
+          network: order.network,
+          phoneNumber: order.phoneNumber,
+          dataSize: order.dataAmount,
+          planName: order.planName,
+          paymentMethod: order.paymentMethod,
+        },
+      },
+      actionUrl: `/admin/orders/${order._id}`,
+    });
 
     res.json({
       success: true,

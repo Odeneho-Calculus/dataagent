@@ -111,6 +111,13 @@ export const admin = {
   getTopzaWalletSettings: () => api.get('/admin/topza/settings'),
   getTopzaWalletTransactions: (page = 1, limit = 20, type = '', status = '') =>
     api.get(`/admin/topza/transactions?page=${page}&limit=${limit}&type=${type}&status=${status}`),
+  getNotifications: (page = 1, limit = 20, type = '', isRead = '', search = '') =>
+    api.get(`/admin/notifications?page=${page}&limit=${limit}&type=${type}&isRead=${isRead}&search=${search}`),
+  getNotificationStats: () => api.get('/admin/notifications/stats'),
+  markNotificationAsRead: (id) => api.patch(`/admin/notifications/${id}/read`),
+  markAllNotificationsAsRead: () => api.patch('/admin/notifications/mark-all/read'),
+  deleteNotification: (id) => api.delete(`/admin/notifications/${id}`),
+  deleteAllNotifications: () => api.delete('/admin/notifications'),
 };
 
 export const dataplans = {

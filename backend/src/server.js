@@ -4,6 +4,7 @@ const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/database');
 const { startOrderStatusSyncJob } = require('./jobs/orderStatusSync');
+const { startTopzaBalanceCheckJob } = require('./jobs/topzaBalanceCheck');
 
 const app = express();
 
@@ -14,6 +15,14 @@ if (process.env.ORDER_SYNC_ENABLED !== 'false') {
     startOrderStatusSyncJob();
   } catch (error) {
     console.error('Failed to initialize order sync job:', error.message);
+  }
+}
+
+if (process.env.TOPZA_BALANCE_CHECK_ENABLED !== 'false') {
+  try {
+    startTopzaBalanceCheckJob();
+  } catch (error) {
+    console.error('Failed to initialize topza balance check job:', error.message);
   }
 }
 
@@ -42,6 +51,7 @@ app.use('/api/purchases', require('./routes/purchases'));
 app.use('/api/dataplans', require('./routes/dataplans'));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/admin/notifications', require('./routes/notifications'));
 
 app.get('/health', (req, res) => {
   res.json({ success: true, message: 'Server is running' });
