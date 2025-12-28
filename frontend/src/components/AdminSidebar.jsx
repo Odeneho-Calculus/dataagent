@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, TrendingUp, ShoppingCart, Menu, X, Database, Gift, Package } from 'lucide-react';
+import { LayoutDashboard, Users, TrendingUp, ShoppingCart, Menu, X, Database, Gift, Package, Wallet } from 'lucide-react';
 
 export default function AdminSidebar({ isOpen, onClose }) {
   const location = useLocation();
@@ -13,6 +13,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
     { path: '/admin/orders', label: 'Orders', icon: Package },
     { path: '/admin/referrals', label: 'Referral Program', icon: Gift },
     { path: '/admin/purchases', label: 'Purchases', icon: ShoppingCart },
+    { path: '/admin/topza-settings', label: 'Topza Wallet', icon: Wallet },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -27,19 +28,24 @@ export default function AdminSidebar({ isOpen, onClose }) {
       />
 
       <aside
-        className={`fixed top-0 left-0 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-40 transition-transform ${
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transition-transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
+        style={{
+          backgroundColor: 'var(--bg-primary)',
+          borderRight: '1px solid var(--border-color)'
+        }}
       >
         <div className="h-full flex flex-col">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="p-6 flex items-center justify-between" style={{borderBottom: '1px solid var(--border-color)'}}>
             <Link to="/admin" className="flex items-center gap-2 hover:opacity-80 transition">
               <span className="text-2xl">👑</span>
-              <span className="font-bold text-slate-900 dark:text-white">Admin</span>
+              <span className="font-bold" style={{color: 'var(--text-primary)'}}>Admin</span>
             </Link>
             <button
               onClick={onClose}
-              className="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              className="lg:hidden p-2 rounded-lg"
+              style={{color: 'var(--text-primary)'}}
             >
               <X size={20} />
             </button>
@@ -54,11 +60,13 @@ export default function AdminSidebar({ isOpen, onClose }) {
                   key={item.path}
                   to={item.path}
                   onClick={() => onClose()}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                    active
-                      ? 'bg-primary-600 text-white'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg transition"
+                  style={active ? {
+                    backgroundColor: '#5a1bff',
+                    color: 'white'
+                  } : {
+                    color: 'var(--text-secondary)'
+                  }}
                 >
                   <Icon size={20} />
                   <span className="font-medium">{item.label}</span>
@@ -67,7 +75,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
             })}
           </nav>
 
-          <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+          <div className="p-4 text-xs" style={{borderTop: '1px solid var(--border-color)', color: 'var(--text-secondary)'}}>
             <p>Admin Dashboard v1.0</p>
           </div>
         </div>

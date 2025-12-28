@@ -271,4 +271,55 @@ exports.getOrderStatus = async (orderId) => {
   }
 };
 
+exports.getWalletTransactions = async (page = 1, limit = 20, filters = {}) => {
+  try {
+    const params = {
+      page,
+      limit,
+      ...filters,
+    };
+    
+    console.log('[Topza API] Fetching wallet transactions:', params);
+    
+    const response = await topzaApi.get('/v1/wallet/transactions', { params });
+    
+    console.log('[Topza API] Wallet transactions response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      transactionCount: response.data?.data?.transactions?.length,
+    });
+    
+    if (response.data && response.data.success) {
+      console.log('[Topza API] Wallet transactions retrieved successfully');
+      return {
+        success: true,
+        data: response.data.data,
+        pagination: response.data.data?.pagination,
+      };
+    }
+    
+    const errorMsg = response.data?.message || 'Failed to fetch wallet transactions';
+    console.error('[Topza API] Wallet transactions failed:', {
+      message: errorMsg,
+      code: response.data?.code,
+    });
+    
+    return {
+      success: false,
+      error: errorMsg,
+    };
+  } catch (error) {
+    console.error('[Topza API] Error fetching wallet transactions:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    
+    return {
+      success: false,
+      error: error.response?.data?.message || error.message || 'Failed to fetch wallet transactions',
+    };
+  }
+};
+
 module.exports = exports;

@@ -1,4 +1,4 @@
-# Highest Data Hub 📡
+# agentOne 📡
 
 A modern data bundle reseller platform built with **React + Vite + Tailwind CSS** (frontend) and **Express.js + MongoDB** (backend).
 

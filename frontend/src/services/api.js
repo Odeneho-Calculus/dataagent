@@ -108,6 +108,9 @@ export const admin = {
   resetAllReferralEarnings: () => api.patch('/admin/referrals/reset-all/earnings'),
   getReferralSettings: () => api.get('/admin/referrals/settings'),
   updateReferralSettings: (settings) => api.patch('/admin/referrals/settings', settings),
+  getTopzaWalletSettings: () => api.get('/admin/topza/settings'),
+  getTopzaWalletTransactions: (page = 1, limit = 20, type = '', status = '') =>
+    api.get(`/admin/topza/transactions?page=${page}&limit=${limit}&type=${type}&status=${status}`),
 };
 
 export const dataplans = {

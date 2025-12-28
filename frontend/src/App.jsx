@@ -21,6 +21,7 @@ import AdminOrders from './pages/AdminOrders';
 import AdminReferrals from './pages/AdminReferrals';
 import AdminTransactions from './pages/AdminTransactions';
 import AdminPurchases from './pages/AdminPurchases';
+import AdminTopzaSettings from './pages/AdminTopzaSettings';
 
 function AppContent() {
   const location = useLocation();
@@ -134,6 +135,14 @@ function AppContent() {
               element={
                 <AdminProtectedRoute>
                   <AdminPurchases />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/topza-settings"
+              element={
+                <AdminProtectedRoute>
+                  <AdminTopzaSettings />
                 </AdminProtectedRoute>
               }
             />

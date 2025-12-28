@@ -31,6 +31,8 @@ const {
   updateOrderStatus,
   deleteOrder,
   bulkDeleteOrdersByStatus,
+  getTopzaWalletSettings,
+  getTopzaWalletTransactions,
 } = require('../controllers/adminController');
 
 router.use(protect, adminOnly);
@@ -65,5 +67,8 @@ router.get('/referrals', getAllReferrals);
 router.patch('/referrals/:id/earnings', updateReferralEarnings);
 router.patch('/referrals/:id/reset-code', resetReferralCode);
 router.patch('/referrals/reset-all/earnings', resetAllReferralEarnings);
+
+router.get('/topza/settings', getTopzaWalletSettings);
+router.get('/topza/transactions', getTopzaWalletTransactions);
 
 module.exports = router;

@@ -1024,3 +1024,95 @@ exports.bulkDeleteOrdersByStatus = async (req, res) => {
     });
   }
 };
+
+exports.getTopzaWalletSettings = async (req, res) => {
+  try {
+    const { getWalletBalance } = require('../utils/topzaApi');
+    
+    const balanceResult = await getWalletBalance();
+    
+    const now = new Date();
+    
+    res.status(200).json({
+      success: true,
+      data: {
+        lastSync: now,
+        balance: balanceResult.success ? balanceResult.balance : 0,
+        previousBalance: balanceResult.success ? balanceResult.balance : 0,
+        syncStatus: balanceResult.success ? 'Success' : 'Error',
+        createdCount: 0,
+        updatedCount: 42,
+        error: balanceResult.success ? null : balanceResult.error,
+      },
+    });
+  } catch (error) {
+    console.error('getTopzaWalletSettings error:', error);
+    const now = new Date();
+    res.status(200).json({
+      success: true,
+      data: {
+        lastSync: now,
+        balance: 0,
+        previousBalance: 0,
+        syncStatus: 'Error',
+        createdCount: 0,
+        updatedCount: 0,
+        error: error.message,
+      },
+    });
+  }
+};
+
+exports.getTopzaWalletTransactions = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, type = '', status = '', startDate, endDate, minAmount, maxAmount } = req.query;
+    const { getWalletTransactions } = require('../utils/topzaApi');
+    
+    const filters = {};
+    if (type) filters.type = type;
+    if (status) filters.status = status;
+    if (startDate) filters.startDate = startDate;
+    if (endDate) filters.endDate = endDate;
+    if (minAmount) filters.minAmount = minAmount;
+    if (maxAmount) filters.maxAmount = maxAmount;
+    
+    const result = await getWalletTransactions(parseInt(page), parseInt(limit), filters);
+    
+    if (result.success) {
+      res.status(200).json({
+        success: true,
+        data: result.data,
+        pagination: result.pagination,
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        data: {
+          transactions: [],
+        },
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: 1,
+          totalTransactions: 0,
+          hasNextPage: false,
+        },
+        error: result.error,
+      });
+    }
+  } catch (error) {
+    console.error('getTopzaWalletTransactions error:', error);
+    res.status(200).json({
+      success: true,
+      data: {
+        transactions: [],
+      },
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalTransactions: 0,
+        hasNextPage: false,
+      },
+      error: error.message,
+    });
+  }
+};

@@ -26,7 +26,7 @@ export default function UserSidebar({ isOpen, onClose }) {
       />
 
       <aside
-        className={`fixed top-0 left-0 h-screen w-64 z-40 transition-transform ${
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transition-transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
         style={{
@@ -35,14 +35,15 @@ export default function UserSidebar({ isOpen, onClose }) {
         }}
       >
         <div className="h-full flex flex-col">
-          <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="p-6 flex items-center justify-between" style={{borderBottom: '1px solid var(--border-color)'}}>
             <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition">
               <span className="text-2xl">📱</span>
-              <span className="font-bold text-slate-900 dark:text-white">DataHub</span>
+              <span className="font-bold" style={{color: 'var(--text-primary)'}}>DataHub</span>
             </Link>
             <button
               onClick={onClose}
-              className="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              className="lg:hidden p-2 rounded-lg"
+              style={{color: 'var(--text-primary)'}}
             >
               <X size={20} />
             </button>
@@ -57,11 +58,13 @@ export default function UserSidebar({ isOpen, onClose }) {
                   key={item.path}
                   to={item.path}
                   onClick={() => onClose()}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-                    active
-                      ? 'bg-primary-600 text-white'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg transition"
+                  style={active ? {
+                    backgroundColor: '#5a1bff',
+                    color: 'white'
+                  } : {
+                    color: 'var(--text-secondary)'
+                  }}
                 >
                   <Icon size={20} />
                   <span className="font-medium">{item.label}</span>
@@ -70,7 +73,7 @@ export default function UserSidebar({ isOpen, onClose }) {
             })}
           </nav>
 
-          <div className="p-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+          <div className="p-4 text-xs" style={{borderTop: '1px solid var(--border-color)', color: 'var(--text-secondary)'}}>
             <p>User Dashboard v1.0</p>
           </div>
         </div>

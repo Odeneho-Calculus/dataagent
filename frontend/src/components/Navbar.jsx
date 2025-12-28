@@ -36,7 +36,7 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition flex-shrink-0">
               <span className="text-2xl">📡</span>
               <div className="hidden xs:block">
-                <div className="font-bold text-sm" style={{color: 'var(--text-primary)'}}>HIGHEST</div>
+                <div className="font-bold text-sm" style={{color: 'var(--text-primary)'}}>agentOne</div>
                 <div className="text-xs" style={{color: 'var(--text-secondary)'}}>DATA HUB</div>
               </div>
             </Link>

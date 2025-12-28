@@ -56,7 +56,7 @@ export default function Register() {
           <div className="text-center mb-8">
             <div className="text-4xl mb-2">📡</div>
             <h1 className="text-2xl font-bold">Create Account</h1>
-            <p className="mt-2" style={{color: 'var(--text-secondary)'}}>Join Highest Data Hub today</p>
+            <p className="mt-2" style={{color: 'var(--text-secondary)'}}>Join agentOne today</p>
           </div>
 
           {error && (

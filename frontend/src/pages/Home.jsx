@@ -190,7 +190,7 @@ export default function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8">Why Choose HIGHEST?</h2>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8">Why Choose agentOne?</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {features.map((feat, idx) => (
             <div key={idx} className="p-4 sm:p-6 rounded-lg border transition hover:opacity-80" style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}>
@@ -229,7 +229,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 text-center">
           <div className="p-6 sm:p-8 md:p-10 lg:p-12 rounded-2xl border-2 card" style={{borderColor: 'var(--primary-600)'}}>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Start Saving Today</h2>
-            <p className="text-base sm:text-lg mb-6 sm:mb-8" style={{color: 'var(--text-secondary)'}}>Enjoy reliable, affordable mobile data with HIGHEST. Simple, secure, and transparent.</p>
+            <p className="text-base sm:text-lg mb-6 sm:mb-8" style={{color: 'var(--text-secondary)'}}>Enjoy reliable, affordable mobile data with agentOne. Simple, secure, and transparent.</p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link to="/register" className="btn btn-light text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3">
                 Create Account Now
@@ -244,7 +244,7 @@ export default function Home() {
 
       <div className="border-t" style={{borderColor: 'var(--border-color)'}}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 text-center">
-          <p className="text-sm sm:text-base" style={{color: 'var(--text-secondary)'}}>© 2025 HIGHEST Data Hub. All rights reserved.</p>
+          <p className="text-sm sm:text-base" style={{color: 'var(--text-secondary)'}}>© 2025 agentOne. All rights reserved.</p>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 {
-  "name": "highest-data-hub-backend",
+  "name": "agentOne-backend",
   "version": "2.0.0",
-  "description": "Backend API for Highest Data Hub - Express.js + MongoDB",
+  "description": "Backend API for agentOne - Express.js + MongoDB",
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon",
