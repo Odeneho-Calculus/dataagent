@@ -74,13 +74,15 @@ export default function AdminDataPlans() {
 
   const handleEditPrices = (plan) => {
     setEditingId(plan._id);
-    setEditCost(plan.costPrice);
-    setEditSelling(plan.sellingPrice);
+    setEditCost(Number(plan.costPrice) || 0);
+    setEditSelling(Number(plan.sellingPrice) || 0);
   };
 
   const handleSavePrices = async () => {
     try {
-      const response = await dataplans.updatePrices(editingId, editCost, editSelling);
+      const costPrice = isNaN(editCost) ? 0 : Number(editCost);
+      const sellingPrice = isNaN(editSelling) ? 0 : Number(editSelling);
+      const response = await dataplans.updatePrices(editingId, costPrice, sellingPrice);
       if (response.success) {
         setPlans(plans.map(p => p._id === editingId ? response.plan : p));
         setEditingId(null);
@@ -337,7 +339,7 @@ export default function AdminDataPlans() {
                 </label>
                 <input
                   type="number"
-                  value={editCost}
+                  value={isNaN(editCost) ? 0 : editCost}
                   disabled
                   step="0.01"
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white cursor-not-allowed"
@@ -349,18 +351,18 @@ export default function AdminDataPlans() {
                 </label>
                 <input
                   type="number"
-                  value={editSelling}
-                  onChange={(e) => setEditSelling(parseFloat(e.target.value))}
+                  value={isNaN(editSelling) ? 0 : editSelling}
+                  onChange={(e) => setEditSelling(e.target.value === '' ? 0 : parseFloat(e.target.value))}
                   step="0.01"
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                 />
               </div>
               <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg">
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  <span className="font-medium">Margin:</span> {calculateDiscount(editCost, editSelling)}%
+                  <span className="font-medium">Margin:</span> {isNaN(editCost) || isNaN(editSelling) ? '0' : calculateDiscount(editCost, editSelling)}%
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-                  Your profit: GHS {(editSelling - editCost).toFixed(2)}
+                  Your profit: GHS {(isNaN(editCost) || isNaN(editSelling) ? 0 : (editSelling - editCost)).toFixed(2)}
                 </p>
               </div>
             </div>

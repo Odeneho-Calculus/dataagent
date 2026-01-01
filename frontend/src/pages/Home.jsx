@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { publicAPI } from '../services/api';
+import { useMetaTags } from '../hooks/useMetaTags';
 import {
   BoltIcon,
   CheckCircleIcon,
@@ -19,6 +20,13 @@ export default function Home() {
   const [networks, setNetworks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [referralSettings, setReferralSettings] = useState(null);
+
+  useMetaTags({
+    title: 'Buy Data Bundles & Mobile Credit Online',
+    description: 'Get instant access to MTN, Telecel, and AirtelTigo data bundles. No hidden fees, transparent pricing, guaranteed delivery.',
+    url: `${import.meta.env.VITE_APP_URL || 'https://desnethub.onrender.com'}/`,
+    type: 'website',
+  });
 
   useEffect(() => {
     fetchActivePlans();
