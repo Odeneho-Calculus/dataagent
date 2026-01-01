@@ -25,9 +25,9 @@ exports.getWalletBalance = async () => {
     });
     
     if (response.data && response.data.success) {
-      const balance = response.data.data?.balance || 0;
+      const balance = response.data.data?.balance;
       
-      if (balance === undefined || balance === null || balance === 0) {
+      if (balance === undefined || balance === null) {
         console.error('[Topza API] Unable to extract balance from response:', response.data);
         return {
           success: false,
