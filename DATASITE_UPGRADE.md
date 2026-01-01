@@ -23,7 +23,7 @@
 
 ## Overview
 
-This guide provides a structured approach to migrate **agentOne** from a Firebase + Vanilla JS frontend to a modern, scalable React + Node.js stack with MongoDB Atlas as the database.
+This guide provides a structured approach to migrate **Desnethub** from a Firebase + Vanilla JS frontend to a modern, scalable React + Node.js stack with MongoDB Atlas as the database.
 
 ### Key Benefits
 - **Better Developer Experience**: React components with hot reloading via Vite
@@ -163,7 +163,7 @@ Create `package.json` in root:
 
 ```json
 {
-  "name": "agentOne",
+  "name": "Desnethub",
   "version": "2.0.0",
   "description": "Data bundle reseller platform - React + Node.js + MongoDB",
   "main": "backend/src/server.js",
@@ -261,7 +261,7 @@ PORT=5000
 NODE_ENV=development
 
 # Database
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/agentOne?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/Desnethub?retryWrites=true&w=majority
 
 # JWT
 JWT_SECRET=your_jwt_secret_key_min_32_characters_long_please
@@ -999,7 +999,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-2">
             <span className="text-2xl">📡</span>
             <div>
-              <div className="font-bold text-slate-900 dark:text-white">agentOne</div>
+              <div className="font-bold text-slate-900 dark:text-white">Desnethub</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">DATA HUB</div>
             </div>
           </Link>
@@ -1413,7 +1413,7 @@ Update `.env` files with production credentials:
 ```
 NODE_ENV=production
 PORT=5000
-MONGODB_URI=mongodb+srv://prod_user:prod_pass@cluster.mongodb.net/agentOne
+MONGODB_URI=mongodb+srv://prod_user:prod_pass@cluster.mongodb.net/Desnethub
 JWT_SECRET=your_long_production_secret_key_min_32_chars
 CORS_ORIGIN=https://yourdomain.com
 PAYSTACK_SECRET_KEY=sk_live_xxxxxxxxxxxxx

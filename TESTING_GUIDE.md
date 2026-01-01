@@ -18,7 +18,7 @@ This guide provides step-by-step instructions to test the newly implemented Phas
 4. Update `backend/.env`:
 
 ```env
-MONGODB_URI=mongodb+srv://your_username:your_password@cluster.mongodb.net/agentOne?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://your_username:your_password@cluster.mongodb.net/Desnethub?retryWrites=true&w=majority
 ```
 
 ### Step 2: Start Backend Server
@@ -184,7 +184,7 @@ curl -H "Authorization: Bearer $token" `
 You can verify data is being saved by:
 1. Going to MongoDB Atlas
 2. Clicking "Collections" in your cluster
-3. Looking at the `agentOne` database
+3. Looking at the `Desnethub` database
 4. Viewing the `users`, `transactions`, `purchases` collections
 
 ---

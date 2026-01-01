@@ -43,7 +43,7 @@ export default function Login() {
           <div className="text-center mb-8">
             <div className="text-4xl mb-2">📡</div>
             <h1 className="text-2xl font-bold">Sign In</h1>
-            <p className="mt-2" style={{color: 'var(--text-secondary)'}}>Welcome back to agentOne</p>
+            <p className="mt-2" style={{color: 'var(--text-secondary)'}}>Welcome back to Desnethub</p>
           </div>
 
           {error && (

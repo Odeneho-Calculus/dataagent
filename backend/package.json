@@ -1,7 +1,7 @@
 {
-  "name": "agentOne-backend",
+  "name": "Desnethub-backend",
   "version": "2.0.0",
-  "description": "Backend API for agentOne - Express.js + MongoDB",
+  "description": "Backend API for Desnethub - Express.js + MongoDB",
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon",

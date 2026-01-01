@@ -1,5 +1,5 @@
 {
-  "name": "agentOne",
+  "name": "Desnethub",
   "version": "2.0.0",
   "description": "Data bundle reseller platform - React + Node.js + MongoDB",
   "main": "backend/src/server.js",
