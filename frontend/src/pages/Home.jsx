@@ -22,7 +22,7 @@ export default function Home() {
   const [referralSettings, setReferralSettings] = useState(null);
 
   useMetaTags({
-    title: 'Buy Data Bundles & Mobile Credit Online',
+    title: 'Buy Data Bundles Online',
     description: 'Get instant access to MTN, Telecel, and AirtelTigo data bundles. No hidden fees, transparent pricing, guaranteed delivery.',
     url: `${import.meta.env.VITE_APP_URL || 'https://desnethub.onrender.com'}/`,
     type: 'website',

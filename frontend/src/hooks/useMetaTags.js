@@ -1,6 +1,6 @@
 export const useMetaTags = (config = {}) => {
   const {
-    title = 'Buy Data Bundles & Mobile Credit Online',
+    title = 'Buy Data Bundles Online',
     description = 'Get instant access to MTN, Telecel, and AirtelTigo data bundles. No hidden fees, transparent pricing, guaranteed delivery.',
     image = `${import.meta.env.VITE_APP_URL || 'https://desnethub.onrender.com'}/og-image.png`,
     url = import.meta.env.VITE_APP_URL || 'https://desnethub.onrender.com',
