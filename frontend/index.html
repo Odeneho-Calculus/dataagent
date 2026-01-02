@@ -30,15 +30,15 @@
     <meta name="keywords" content="data bundles, mobile credit, MTN, Telecel, Airteltigo, airtime, internet" />
     <script>
       (function() {
-        const theme = localStorage.getItem('theme');
-        const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        const theme = localStorage.getItem('theme') || 'light';
+        const isDark = theme === 'dark';
         const html = document.documentElement;
         
+        html.classList.remove('dark');
         if (isDark) {
           html.classList.add('dark');
           html.style.colorScheme = 'dark';
         } else {
-          html.classList.remove('dark');
           html.style.colorScheme = 'light';
         }
       })();

@@ -166,7 +166,7 @@ export default function Transactions() {
 
   return (
     <UserLayout>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8 lg:py-12">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6">
@@ -184,38 +184,38 @@ export default function Transactions() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white border-2 border-red-300 rounded-2xl text-red-700 text-sm">
               {error}
             </div>
           )}
 
           {/* Stats Cards - Always 2 columns on mobile, 3 on larger screens */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 sm:p-6">
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 truncate">Total Transactions</p>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2">{transactions.length}</p>
+            <div className="bg-white rounded-2xl border-2 border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 shadow-sm p-4 sm:p-6">
+              <p className="text-xs sm:text-sm text-slate-600 truncate">Total Transactions</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2 text-slate-900">{transactions.length}</p>
             </div>
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 sm:p-6">
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 truncate">Total Data Spent</p>
+            <div className="bg-white rounded-2xl border-2 border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 shadow-sm p-4 sm:p-6">
+              <p className="text-xs sm:text-sm text-slate-600 truncate">Total Data Spent</p>
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2 text-red-500 truncate">-GHS {totalSpent.toFixed(2)}</p>
             </div>
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 sm:p-6 col-span-2 lg:col-span-1">
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 truncate">Total Top-up</p>
+            <div className="bg-white rounded-2xl border-2 border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 shadow-sm p-4 sm:p-6 col-span-2 lg:col-span-1">
+              <p className="text-xs sm:text-sm text-slate-600 truncate">Total Top-up</p>
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold mt-1 sm:mt-2 text-green-500 truncate">+GHS {totalTopUp.toFixed(2)}</p>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm mb-4 sm:mb-6">
+          <div className="bg-white rounded-2xl border-2 border-slate-200 mb-4 sm:mb-6 shadow-sm">
             {/* Horizontal scrolling tabs only */}
-            <div className="overflow-x-auto scrollbar-hide border-b border-slate-200 dark:border-slate-700">
+            <div className="overflow-x-auto scrollbar-hide border-b border-slate-200">
               <div className="flex">
                 <button
                   onClick={() => setActiveTab('all')}
                   className={`px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium transition border-b-2 whitespace-nowrap ${
                     activeTab === 'all'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   All
@@ -224,8 +224,8 @@ export default function Transactions() {
                   onClick={() => setActiveTab('data-purchase')}
                   className={`px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium transition border-b-2 whitespace-nowrap ${
                     activeTab === 'data-purchase'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Data
@@ -234,8 +234,8 @@ export default function Transactions() {
                   onClick={() => setActiveTab('topup')}
                   className={`px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium transition border-b-2 whitespace-nowrap ${
                     activeTab === 'topup'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Top-ups
@@ -244,8 +244,8 @@ export default function Transactions() {
                   onClick={() => setActiveTab('bonus')}
                   className={`px-3 sm:px-5 py-2 sm:py-3 text-xs sm:text-sm font-medium transition border-b-2 whitespace-nowrap ${
                     activeTab === 'bonus'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Bonuses
@@ -258,7 +258,7 @@ export default function Transactions() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-lg border-2 border-slate-200 bg-white hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                 title="Filter by Status"
               >
                 <option value="all">All Status</option>
@@ -269,7 +269,7 @@ export default function Transactions() {
               <select
                 value={perPage}
                 onChange={(e) => setPerPage(Number(e.target.value))}
-                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-lg border-2 border-slate-200 bg-white hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                 title="Items per page"
               >
                 <option value={5}>5 items</option>
@@ -293,24 +293,24 @@ export default function Transactions() {
           {/* Transactions List */}
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Loading transactions...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-sm text-slate-600">Loading transactions...</p>
             </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-slate-600 dark:text-slate-400">No transactions found</p>
+              <p className="text-sm text-slate-600">No transactions found</p>
             </div>
           ) : (
             <div className="space-y-3 sm:space-y-4">
               {paginatedTransactions.map(tx => (
-                <div key={tx.id} className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-4 sm:p-6">
+                <div key={tx.id} className="bg-white rounded-2xl border-2 border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 shadow-sm p-4 sm:p-6">
                   {/* Transaction Header */}
                   <div className="flex justify-between items-start gap-3 mb-3 sm:mb-4">
                     <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
                       <span className="text-xl sm:text-2xl flex-shrink-0">{getTransactionIcon(tx.type)}</span>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-sm sm:text-base truncate">{tx.type}</h3>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">{tx.date}</p>
+                        <h3 className="font-semibold text-sm sm:text-base truncate text-slate-900">{tx.type}</h3>
+                        <p className="text-xs text-slate-600">{tx.date}</p>
                       </div>
                     </div>
                     <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
@@ -325,22 +325,22 @@ export default function Transactions() {
                   </div>
 
                   {/* Amount & Balance Grid */}
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4 py-3 border-y border-slate-200 dark:border-slate-700">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4 py-3 border-y border-slate-200">
                     <div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mb-0.5">Amount</p>
+                      <p className="text-xs text-slate-600 mb-0.5">Amount</p>
                       <p className="font-bold text-sm sm:text-base truncate" style={{color: tx.amount < 0 ? '#ef4444' : '#22c55e'}}>
                         {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mb-0.5">Balance After</p>
-                      <p className="font-bold text-sm sm:text-base text-blue-500 truncate">GHS {tx.balanceAfter.toFixed(2)}</p>
+                      <p className="text-xs text-slate-600 mb-0.5">Balance After</p>
+                      <p className="font-bold text-sm sm:text-base text-blue-600 truncate">GHS {tx.balanceAfter.toFixed(2)}</p>
                     </div>
                   </div>
 
                   {/* Description & Actions */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 break-words flex-1 min-w-0">{tx.description}</p>
+                    <p className="text-xs sm:text-sm text-slate-700 break-words flex-1 min-w-0">{tx.description}</p>
                     <div className="flex items-center gap-1.5 sm:gap-2 justify-end flex-shrink-0">
                       <button
                         onClick={() => {

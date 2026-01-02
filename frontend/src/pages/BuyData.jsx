@@ -150,16 +150,16 @@ export default function BuyData() {
 
   return (
     <UserLayout>
-      <div className="min-h-screen w-full overflow-x-hidden" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+      <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
           {/* Page Header */}
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 lg:mb-8">Buy Data Bundles</h1>
 
           {/* Success Message */}
           {successMessage && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white border-2 border-green-300 rounded-2xl text-green-700">
               <div className="flex items-start gap-2 sm:gap-3">
-                <CheckCircle size={18} className="flex-shrink-0 mt-0.5 sm:w-5 sm:h-5" />
+                <CheckCircle size={18} className="flex-shrink-0 mt-0.5 sm:w-5 sm:h-5 text-green-500" />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm sm:text-base">{successMessage}</p>
                   {successDetails && (
@@ -176,9 +176,9 @@ export default function BuyData() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white border-2 border-red-300 rounded-2xl text-red-700">
               <div className="flex items-start gap-2 sm:gap-3">
-                <AlertCircle size={18} className="flex-shrink-0 mt-0.5 sm:w-5 sm:h-5" />
+                <AlertCircle size={18} className="flex-shrink-0 mt-0.5 sm:w-5 sm:h-5 text-red-500" />
                 <div className="text-sm sm:text-base">{error}</div>
               </div>
             </div>
@@ -186,14 +186,14 @@ export default function BuyData() {
 
           {/* No Plans Available */}
           {availableNetworks.length === 0 ? (
-            <div className="card p-6 sm:p-8 text-center">
-              <p className="text-slate-600 dark:text-slate-400 mb-3 sm:mb-4 text-sm sm:text-base">No data plans available</p>
+            <div className="bg-white rounded-2xl p-6 sm:p-8 text-center border-2 border-slate-200">
+              <p className="text-slate-600 mb-3 sm:mb-4 text-sm sm:text-base">No data plans available</p>
               <p className="text-xs sm:text-sm text-slate-500">Please check back later or contact support</p>
             </div>
           ) : (
             <>
               {/* Network Tabs */}
-              <div className="mb-4 sm:mb-6 lg:mb-8 border-b" style={{borderColor: 'var(--border-color)'}}>
+              <div className="mb-4 sm:mb-6 lg:mb-8 border-b border-slate-200">
                 <div className="flex gap-2 sm:gap-4 overflow-x-auto pb-0">
                   {availableNetworks.map(network => (
                     <button
@@ -201,8 +201,8 @@ export default function BuyData() {
                       onClick={() => setSelectedNetwork(network)}
                       className={`px-3 sm:px-4 py-3 sm:py-4 text-sm sm:text-base font-medium transition whitespace-nowrap border-b-2 ${
                         selectedNetwork === network 
-                          ? 'border-primary-600 text-primary-600' 
-                          : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'
+                          ? 'border-blue-600 text-blue-600' 
+                          : 'border-transparent text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       <Wifi size={16} className="inline mr-2" />
@@ -213,51 +213,58 @@ export default function BuyData() {
               </div>
 
               {/* Available Bundles */}
-              <div className="card p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8">
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4 sm:mb-6">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-2 border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4 sm:mb-6 text-slate-900">
                   <span className="hidden sm:inline">{selectedNetwork} Bundles</span>
                   <span className="sm:hidden truncate">{selectedNetwork}</span>
                 </h2>
                 {currentBundles.length === 0 ? (
-                  <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">No bundles available for this network</p>
+                  <p className="text-slate-600 text-sm sm:text-base">No bundles available for this network</p>
                 ) : (
                   <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
                     {currentBundles.map(bundle => (
                       <div 
                         key={bundle._id} 
-                        className={`p-3 sm:p-4 rounded-lg border transition ${
+                        className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
                           bundle.inStock 
-                            ? 'cursor-pointer hover:opacity-80' 
-                            : 'opacity-50 cursor-not-allowed'
+                            ? 'cursor-pointer hover:border-blue-400 hover:shadow-lg border-slate-200 bg-white' 
+                            : 'opacity-50 cursor-not-allowed border-slate-200 bg-white'
                         }`}
-                        style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}
+                        onClick={() => bundle.inStock && handlePurchaseClick(bundle)}
                       >
                         <div className="mb-2 sm:mb-3">
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <div>
-                              <p className="text-base sm:text-lg font-bold truncate">{bundle.dataSize}</p>
-                              <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>
+                              <p className="text-base sm:text-lg font-bold truncate text-slate-900">{bundle.dataSize}</p>
+                              <p className="text-xs sm:text-sm truncate text-slate-600">
                                 {bundle.validity}
                               </p>
                             </div>
-                            {!bundle.inStock && (
-                              <span className="text-xs px-2 py-1 rounded whitespace-nowrap flex-shrink-0 bg-red-500/20 text-red-600 dark:text-red-400">
+                            {!bundle.inStock ? (
+                              <span className="text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-red-100 text-red-600 font-semibold">
                                 Out of Stock
+                              </span>
+                            ) : (
+                              <span className="text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold">
+                                {bundle.network}
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="flex justify-between items-end gap-2">
-                          <p className="text-sm sm:text-base font-bold text-primary-600 whitespace-nowrap">
+                          <p className="text-sm sm:text-base font-bold text-blue-600 whitespace-nowrap">
                             GHS {bundle.sellingPrice.toFixed(2)}
                           </p>
                           <button
-                            onClick={() => handlePurchaseClick(bundle)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePurchaseClick(bundle);
+                            }}
                             disabled={!bundle.inStock}
                             className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 transition ${
                               bundle.inStock 
-                                ? 'bg-primary-600 hover:bg-primary-700 text-white' 
-                                : 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50'
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white' 
+                                : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-50'
                             }`}
                           >
                             <ShoppingCart size={16} className="sm:w-5 sm:h-5" />
@@ -270,9 +277,9 @@ export default function BuyData() {
               </div>
 
               {/* Current Balance Card */}
-              <div className="card p-4 sm:p-6 lg:p-8">
-                <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4">Current Balance</h3>
-                <p className="text-2xl sm:text-3xl font-bold text-primary-600 truncate">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 border-2 border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
+                <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 text-slate-900">Current Balance</h3>
+                <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
                   GHS {user?.balance?.toFixed(2) || '0.00'}
                 </p>
               </div>

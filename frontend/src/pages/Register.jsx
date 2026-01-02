@@ -50,13 +50,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="card p-8">
+        <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-lg">
           <div className="text-center mb-8">
             <div className="text-4xl mb-2">📡</div>
-            <h1 className="text-2xl font-bold">Create Account</h1>
-            <p className="mt-2" style={{color: 'var(--text-secondary)'}}>Join Desnethub today</p>
+            <h1 className="text-3xl font-bold text-slate-900">Create Account</h1>
+            <p className="mt-2 text-slate-600">Join Desnethub today</p>
           </div>
 
           {error && (
@@ -68,35 +68,35 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium text-slate-900 mb-2">
                 Full Name
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="input-field"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="John Doe"
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium text-slate-900 mb-2">
                 Email Address
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input-field"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="you@example.com"
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium text-slate-900 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -104,14 +104,14 @@ export default function Register() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pr-10"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-10"
                   placeholder="••••••••"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-50"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 disabled:opacity-50"
                   disabled={loading}
                 >
                   {showPassword ? (
@@ -124,7 +124,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium text-slate-900 mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -132,14 +132,14 @@ export default function Register() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="input-field pr-10"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-10"
                   placeholder="••••••••"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 disabled:opacity-50"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 disabled:opacity-50"
                   disabled={loading}
                 >
                   {showConfirmPassword ? (
@@ -154,16 +154,16 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn btn-primary py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p style={{color: 'var(--text-secondary)'}}>
+            <p className="text-slate-600">
               Already have an account?{' '}
-              <Link to="/login" className="font-medium">
+              <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
                 Sign in
               </Link>
             </p>

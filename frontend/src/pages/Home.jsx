@@ -3,16 +3,20 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { publicAPI } from '../services/api';
 import { useMetaTags } from '../hooks/useMetaTags';
-import {
-  BoltIcon,
-  CheckCircleIcon,
-  LockClosedIcon,
-  GiftIcon,
-  ChartBarIcon,
-  CreditCardIcon,
-  DevicePhoneMobileIcon,
-  SignalIcon,
-} from '@heroicons/react/24/outline';
+import { 
+  Zap, 
+  Shield, 
+  TrendingDown, 
+  Gift, 
+  BarChart3, 
+  CreditCard,
+  Smartphone,
+  Radio,
+  CheckCircle2,
+  ArrowRight,
+  Star,
+  Lock
+} from 'lucide-react';
 
 export default function Home() {
   const { user } = useAuth();
@@ -41,12 +45,12 @@ export default function Home() {
         
         const uniqueNetworks = [...new Set(response.plans.map(p => p.network))];
         const networkMap = {
-          'MTN': { name: 'MTN', icon: 'mtn' },
-          'TELECEL': { name: 'Telecel', icon: 'phone' },
-          'AIRTELTIGO': { name: 'AirtelTigo', icon: 'airtel' },
+          'MTN': { name: 'MTN', icon: 'mtn', color: 'from-yellow-500 to-yellow-600' },
+          'TELECEL': { name: 'Telecel', icon: 'phone', color: 'from-red-500 to-red-600' },
+          'AIRTELTIGO': { name: 'AirtelTigo', icon: 'airtel', color: 'from-blue-500 to-blue-600' },
         };
         
-        setNetworks(uniqueNetworks.map(n => networkMap[n] || { name: n, icon: 'phone' }));
+        setNetworks(uniqueNetworks.map(n => networkMap[n] || { name: n, icon: 'phone', color: 'from-slate-500 to-slate-600' }));
       }
     } catch (err) {
       console.error('Failed to fetch plans:', err);
@@ -67,18 +71,19 @@ export default function Home() {
   };
 
   const features = [
-    { icon: 'bolt', title: 'Instant Delivery', desc: 'Get data within seconds of purchase' },
-    { icon: 'check', title: 'Best Rates', desc: 'Lowest prices compared to direct purchase' },
-    { icon: 'lock', title: 'Secure Transactions', desc: 'Bank-level security for all payments' },
+    { icon: Zap, title: 'Instant Delivery', desc: 'Get data within seconds of purchase', gradient: 'from-orange-500 to-pink-500' },
+    { icon: TrendingDown, title: 'Best Rates', desc: 'Lowest prices compared to direct purchase', gradient: 'from-green-500 to-emerald-500' },
+    { icon: Lock, title: 'Secure Transactions', desc: 'Bank-level security for all payments', gradient: 'from-blue-500 to-cyan-500' },
     {
-      icon: 'gift',
+      icon: Gift,
       title: 'Referral Rewards',
       desc: referralSettings
         ? `Earn GHS ${referralSettings.amountPerReferral} per successful referral`
         : 'Earn rewards per successful referral',
+      gradient: 'from-purple-500 to-pink-500'
     },
-    { icon: 'chart', title: 'Track Everything', desc: 'View all your purchases and transactions' },
-    { icon: 'card', title: 'Multiple Payment', desc: 'Accept MTN Mobile Money, Vodafone Cash' },
+    { icon: BarChart3, title: 'Track Everything', desc: 'View all your purchases and transactions', gradient: 'from-indigo-500 to-purple-500' },
+    { icon: CreditCard, title: 'Multiple Payment', desc: 'Accept MTN Mobile Money, Vodafone Cash', gradient: 'from-teal-500 to-cyan-500' },
   ];
 
   const faqs = [
@@ -88,61 +93,82 @@ export default function Home() {
     { q: 'What payment methods do you accept?', a: 'We accept MTN Mobile Money, Vodafone Cash, and bank transfers.' },
   ];
 
+  const getNetworkColor = (network) => {
+    const colors = {
+      'MTN': 'from-yellow-500 to-yellow-600',
+      'TELECEL': 'from-red-500 to-red-600',
+      'AIRTELTIGO': 'from-blue-500 to-blue-600'
+    };
+    return colors[network] || 'from-slate-500 to-slate-600';
+  };
+
   return (
-    <div style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Hero Section */}
-      <div className="flex flex-col items-center justify-center px-3 sm:px-4 lg:px-6 py-8 sm:py-10">
-        <div className="max-w-4xl w-full text-center">
-          {/* Main Heading */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
-            Data Bundles at <span style={{color: 'var(--primary-600)'}}>Lowest Prices</span>
-          </h1>
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-pink-600/5" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 relative">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 mb-6">
+              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+              <span className="text-sm font-medium text-slate-700">Trusted by 50,000+ customers</span>
+            </div>
+            
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Data Bundles
+              </span>
+              <br />
+              <span className="text-slate-900">at Lowest Prices</span>
+            </h1>
+            
+            <p className="text-lg sm:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+              Get instant access to MTN, Telecel, and AirtelTigo data bundles with transparent pricing and guaranteed delivery
+            </p>
 
-          {/* Description */}
-          <p className="text-base sm:text-lg md:text-xl mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed" style={{color: 'var(--text-secondary)'}}>
-            Get instant access to MTN, Telecel, and AirtelTigo data bundles. <br className="hidden sm:block" />
-            No hidden fees, transparent pricing, guaranteed delivery.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-0">
-            {user ? (
-              <>
-                <Link to="/dashboard" className="btn btn-primary text-base sm:text-lg px-6 sm:px-8 py-3">
-                  View Dashboard →
-                </Link>
-                <Link to="/buy-data" className="btn btn-secondary text-base sm:text-lg px-6 sm:px-8 py-3">
-                  Buy Data Now
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/register" className="btn btn-primary text-base sm:text-lg px-6 sm:px-8 py-3">
-                  Get Started Free
-                </Link>
-                <Link to="/login" className="btn btn-secondary text-base sm:text-lg px-6 sm:px-8 py-3">
-                  Sign In
-                </Link>
-              </>
-            )}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {user ? (
+                <>
+                  <Link to="/dashboard" className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 flex items-center justify-center gap-2">
+                    View Dashboard
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link to="/buy-data" className="px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold border-2 border-slate-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300">
+                    Buy Data Now
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/register" className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 flex items-center justify-center gap-2">
+                    Get Started Free
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link to="/login" className="px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold border-2 border-slate-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300">
+                    Sign In
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Networks Section - Only for non-logged in users */}
       {!user && (
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 mb-6 sm:mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {networks.map(net => (
-              <div key={net.name} className="card p-6 sm:p-8 hover:shadow-lg transition border border-slate-700 dark:border-slate-600 flex items-center gap-4">
-                <div className="flex-shrink-0">
-                  {net.icon === 'phone' && <DevicePhoneMobileIcon className="w-12 h-12 sm:w-14 sm:h-14" />}
-                  {net.icon === 'mtn' && <SignalIcon className="w-12 h-12 sm:w-14 sm:h-14" />}
-                  {net.icon === 'airtel' && <SignalIcon className="w-12 h-12 sm:w-14 sm:h-14" />}
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-bold mb-1">{net.name}</h3>
-                  <p className="text-sm sm:text-base" style={{color: 'var(--text-secondary)'}}>Fast & Reliable Data</p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {networks.map((net) => (
+              <div key={net.name} className="group relative overflow-hidden bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${net.color} shadow-lg`}>
+                    {net.icon === 'phone' && <Smartphone className="w-6 h-6 text-white" />}
+                    {net.icon === 'mtn' && <Radio className="w-6 h-6 text-white" />}
+                    {net.icon === 'airtel' && <Radio className="w-6 h-6 text-white" />}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-slate-900">{net.name}</h3>
+                    <p className="text-sm text-slate-500">Fast & Reliable Data</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -150,70 +176,121 @@ export default function Home() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12">Popular Data Plans</h2>
+      {/* Popular Plans */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-3">Popular Data Plans</h2>
+          <p className="text-lg text-slate-600">Choose from our best-selling data bundles</p>
+        </div>
+
         {loading ? (
-          <div className="text-center py-8 sm:py-12">
-            <div className="animate-spin rounded-full h-10 sm:h-12 w-10 sm:w-12 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-3 sm:mb-4"></div>
-            <p className="text-sm sm:text-base" style={{color: 'var(--text-secondary)'}}>Loading available plans...</p>
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-200 border-t-blue-600 mx-auto mb-4"></div>
+            <p className="text-slate-600">Loading available plans...</p>
           </div>
         ) : plans.length === 0 ? (
-          <div className="text-center py-8 sm:py-12">
-            <p className="text-sm sm:text-base mb-4" style={{color: 'var(--text-secondary)'}}>No active data plans available</p>
+          <div className="text-center py-16">
+            <p className="text-slate-600 mb-6">No active data plans available</p>
             {!user && (
-              <Link to="/login" className="btn btn-primary">
+              <Link to="/login" className="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300">
                 Sign In to View Plans
               </Link>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {plans.map((plan) => (
-              <div key={plan._id} className="p-3 sm:p-4 rounded-lg border transition hover:opacity-80 cursor-pointer" style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}>
-                <div className="mb-3 sm:mb-4">
-                  <div className="flex justify-between items-start gap-2 mb-2">
-                    <div>
-                      <p className="text-base sm:text-lg font-bold truncate">{plan.dataSize}</p>
-                      <p className="text-xs sm:text-sm truncate" style={{color: 'var(--text-secondary)'}}>
-                        {plan.validity}
-                      </p>
-                    </div>
-                    <span className="text-xs px-2.5 py-1 rounded font-bold whitespace-nowrap flex-shrink-0" style={{backgroundColor: 'var(--primary-600)', color: 'white'}}>
-                      {plan.network}
-                    </span>
+              <Link 
+                key={plan._id} 
+                to={user ? `/buy-data?planId=${plan._id}&planName=${encodeURIComponent(plan.planName)}&dataSize=${encodeURIComponent(plan.dataSize)}&price=${plan.sellingPrice}&network=${plan.network}` : '/login'} 
+                className="group relative bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 cursor-pointer"
+              >
+                <div className="absolute top-4 right-4">
+                  <span className={`px-3 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r ${getNetworkColor(plan.network)}`}>
+                    {plan.network}
+                  </span>
+                </div>
+
+                <div className="mb-6">
+                  <p className="text-3xl font-bold text-slate-900 mb-1">{plan.dataSize}</p>
+                  <p className="text-sm text-slate-500">{plan.validity}</p>
+                </div>
+
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">Price</p>
+                    <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      GHS {plan.sellingPrice.toFixed(2)}
+                    </p>
                   </div>
+                  <button className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold text-sm hover:shadow-lg transition-shadow">
+                    {user ? 'Get Now' : 'View'}
+                  </button>
                 </div>
-                <div className="flex justify-between items-end gap-2">
-                  <p className="text-sm sm:text-base font-bold text-primary-600 whitespace-nowrap">
-                    GHS {plan.sellingPrice.toFixed(2)}
-                  </p>
-                  <Link to={user ? `/buy-data?planId=${plan._id}&planName=${encodeURIComponent(plan.planName)}&dataSize=${encodeURIComponent(plan.dataSize)}&price=${plan.sellingPrice}&network=${plan.network}` : '/login'} className="btn btn-secondary text-xs sm:text-sm py-2 px-3 sm:px-4 flex-shrink-0">
-                    {user ? 'Buy' : 'View'}
-                  </Link>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8">Why Choose Desnethub?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          {features.map((feat, idx) => (
-            <div key={idx} className="p-4 sm:p-6 rounded-lg border transition hover:opacity-80" style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 mt-1">
-                {feat.icon === 'bolt' && <BoltIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
-                {feat.icon === 'check' && <CheckCircleIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
-                {feat.icon === 'lock' && <LockClosedIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
-                {feat.icon === 'gift' && <GiftIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
-                {feat.icon === 'chart' && <ChartBarIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
-                {feat.icon === 'card' && <CreditCardIcon className="w-6 h-6 sm:w-7 sm:h-7" />}
+      {/* Features */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-3">Why Choose Desnethub?</h2>
+          <p className="text-lg text-slate-600">We deliver quality, reliability, and savings</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {features.map((feat) => {
+            const Icon = feat.icon;
+            return (
+              <div key={feat.title} className="group bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
+                <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feat.gradient} shadow-lg mb-4`}>
+                  <Icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-lg text-slate-900 mb-2">{feat.title}</h3>
+                <p className="text-sm text-slate-600">{feat.desc}</p>
               </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-base sm:text-lg mb-1">{feat.title}</h3>
-                  <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>{feat.desc}</p>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Trust/Social Proof Section */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-10 shadow-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <p className="text-5xl font-bold text-white mb-2">50K+</p>
+              <p className="text-blue-100">Happy Customers</p>
+            </div>
+            <div>
+              <p className="text-5xl font-bold text-white mb-2">2M+</p>
+              <p className="text-blue-100">Data Bundles Sold</p>
+            </div>
+            <div>
+              <p className="text-5xl font-bold text-white mb-2">99.9%</p>
+              <p className="text-blue-100">Success Rate</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-10">
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-3">Frequently Asked Questions</h2>
+          <p className="text-lg text-slate-600">Get answers to common questions</p>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, idx) => (
+            <div key={idx} className="bg-white rounded-xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all">
+              <div className="flex gap-3">
+                <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-bold text-slate-900 mb-2">{faq.q}</h3>
+                  <p className="text-slate-600">{faq.a}</p>
                 </div>
               </div>
             </div>
@@ -221,38 +298,32 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 sm:mb-8">Frequently Asked Questions</h2>
-        <div className="space-y-3 sm:space-y-4">
-          {faqs.map((faq, idx) => (
-            <div key={idx} className="card p-5 sm:p-6 border border-slate-700 dark:border-slate-600">
-              <h3 className="font-bold text-base sm:text-lg mb-2 sm:mb-3">{faq.q}</h3>
-              <p className="text-sm sm:text-base" style={{color: 'var(--text-secondary)'}}>{faq.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
+      {/* CTA Section */}
       {!user && (
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 text-center">
-          <div className="p-6 sm:p-8 md:p-10 lg:p-12 rounded-2xl border-2 card" style={{borderColor: 'var(--primary-600)'}}>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">Start Saving Today</h2>
-            <p className="text-base sm:text-lg mb-6 sm:mb-8" style={{color: 'var(--text-secondary)'}}>Enjoy reliable, affordable mobile data with Desnethub. Simple, secure, and transparent.</p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <Link to="/register" className="btn btn-light text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3">
-                Create Account Now
-              </Link>
-              <Link to="/login" className="btn btn-secondary text-base sm:text-lg px-6 sm:px-8 py-2.5 sm:py-3">
-                I Already Have an Account
-              </Link>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-12 shadow-2xl">
+            <div className="relative z-10 text-center">
+              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">Start Saving Today</h2>
+              <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                Enjoy reliable, affordable mobile data with Desnethub. Simple, secure, and transparent pricing for everyone.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/register" className="px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold hover:shadow-2xl transition-all duration-300">
+                  Create Account Now
+                </Link>
+                <Link to="/login" className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-semibold border-2 border-white/20 hover:bg-white/20 transition-all duration-300">
+                  I Already Have an Account
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="border-t" style={{borderColor: 'var(--border-color)'}}>
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 text-center">
-          <p className="text-sm sm:text-base" style={{color: 'var(--text-secondary)'}}>© 2025 Desnethub. All rights reserved.</p>
+      {/* Footer */}
+      <div className="border-t border-slate-200 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+          <p className="text-slate-600">© 2025 Desnethub. All rights reserved.</p>
         </div>
       </div>
     </div>

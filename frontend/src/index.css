@@ -1,44 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #f0f0ff;
-  --color-primary-100: #e0e0ff;
-  --color-primary-200: #c0c0ff;
-  --color-primary-300: #9d7fff;
-  --color-primary-400: #7a4dff;
-  --color-primary-500: #5a1bff;
-  --color-primary-600: #4700d6;
-  --color-primary-700: #3500ad;
-  --color-primary-800: #230084;
-  --color-primary-900: #15005b;
+  --color-primary-50: #f9fafb;
+  --color-primary-100: #f3f4f6;
+  --color-primary-200: #e5e7eb;
+  --color-primary-300: #d1d5db;
+  --color-primary-400: #9ca3af;
+  --color-primary-500: #6b7280;
+  --color-primary-600: #4b5563;
+  --color-primary-700: #374151;
+  --color-primary-800: #1f2937;
+  --color-primary-900: #111827;
 
-  --color-accent-50: #fff0e6;
-  --color-accent-100: #ffe0cc;
-  --color-accent-200: #ffc099;
-  --color-accent-300: #ffa066;
-  --color-accent-400: #ff8033;
-  --color-accent-500: #ff6600;
-  --color-accent-600: #e65c00;
-  --color-accent-700: #cc5200;
-  --color-accent-800: #b24700;
-  --color-accent-900: #993d00;
+  --color-accent-50: #fef2f2;
+  --color-accent-100: #fee2e2;
+  --color-accent-200: #fecaca;
+  --color-accent-300: #fca5a5;
+  --color-accent-400: #f87171;
+  --color-accent-500: #ef4444;
+  --color-accent-600: #dc2626;
+  --color-accent-700: #b91c1c;
+  --color-accent-800: #991b1b;
+  --color-accent-900: #7f1d1d;
 }
 
 @layer base {
   :root {
-    --bg-primary: white;
-    --bg-secondary: #f8fafc;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
-  }
-
-  html.dark {
-    --bg-primary: #0f0f0f;
-    --bg-secondary: #1a1a1a;
-    --text-primary: #e8e8e8;
-    --text-secondary: #a8a8a8;
-    --border-color: #2a2a2a;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
   }
 
   * {
@@ -59,15 +51,11 @@
   }
 
   a {
-    color: #5a1bff;
+    color: var(--color-primary-600);
   }
 
   a:hover {
-    color: #7a4dff;
-  }
-
-  html.dark a:hover {
-    color: #ff6600;
+    color: var(--color-primary-700);
   }
 
   p {
@@ -86,28 +74,28 @@
 
   .btn-primary {
     color: white;
-    background-color: #5a1bff;
+    background-color: var(--color-primary-700);
   }
 
   .btn-primary:hover {
-    background-color: #7a4dff;
+    background-color: var(--color-primary-800);
   }
 
   .btn-primary:active {
-    background-color: #4700d6;
+    background-color: var(--color-primary-900);
   }
 
   .btn-secondary {
     color: white;
-    background-color: #2a2a2a;
+    background-color: #4b5563;
   }
 
   .btn-secondary:hover {
-    background-color: #3a3a3a;
+    background-color: #374151;
   }
 
   .btn-secondary:active {
-    background-color: #4a4a4a;
+    background-color: #1f2937;
   }
 
   .btn-ghost {
@@ -172,23 +160,13 @@
   }
 
   .badge-primary {
-    background-color: #f0f0ff;
-    color: #15005b;
-  }
-
-  html.dark .badge-primary {
-    background-color: #15005b;
-    color: #f0f0ff;
+    background-color: var(--color-primary-50);
+    color: var(--color-primary-800);
   }
 
   .badge-accent {
-    background-color: #fff0e6;
-    color: #993d00;
-  }
-
-  html.dark .badge-accent {
-    background-color: #993d00;
-    color: #fff0e6;
+    background-color: #fef2f2;
+    color: #991b1b;
   }
 
   .text-muted {

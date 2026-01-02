@@ -81,7 +81,7 @@ export default function Orders() {
 
   return (
     <UserLayout>
-      <div className="min-h-screen w-full overflow-x-hidden" style={{background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 100%)'}}>
+      <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -103,23 +103,22 @@ export default function Orders() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm sm:text-base">
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-white border-2 border-red-300 rounded-2xl text-red-700 text-sm sm:text-base">
               {error}
             </div>
           )}
 
           {/* Filters */}
-          <div className="card p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-8">
+          <div className="bg-white rounded-2xl p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-8 border-2 border-slate-200">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label style={{color: 'var(--text-secondary)'}} className="text-xs sm:text-sm block mb-1.5 sm:mb-2">
+                <label className="text-xs sm:text-sm block mb-1.5 sm:mb-2 text-slate-600">
                   Status
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border text-sm" 
-                  style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}
+                  className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border-2 border-slate-200 text-sm bg-white hover:border-blue-400 transition-colors"
                 >
                   <option value="all">All</option>
                   <option value="completed">Completed</option>
@@ -129,14 +128,13 @@ export default function Orders() {
                 </select>
               </div>
               <div>
-                <label style={{color: 'var(--text-secondary)'}} className="text-xs sm:text-sm block mb-1.5 sm:mb-2">
+                <label className="text-xs sm:text-sm block mb-1.5 sm:mb-2 text-slate-600">
                   Network
                 </label>
                 <select
                   value={networkFilter}
                   onChange={(e) => setNetworkFilter(e.target.value)}
-                  className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border text-sm" 
-                  style={{borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-secondary)'}}
+                  className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border-2 border-slate-200 text-sm bg-white hover:border-blue-400 transition-colors"
                 >
                   <option value="all">All Networks</option>
                   {getUniqueNetworks().map(network => (
@@ -148,15 +146,15 @@ export default function Orders() {
           </div>
 
           {/* Orders Table/Cards */}
-          <div className="card p-4 sm:p-6 lg:p-8">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 border-2 border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
             {loading ? (
               <div className="text-center py-6 sm:py-8">
-                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-2"></div>
-                <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>Loading orders...</p>
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                <p className="text-xs sm:text-sm text-slate-600">Loading orders...</p>
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-6 sm:py-8">
-                <p className="text-xs sm:text-sm" style={{color: 'var(--text-secondary)'}}>No orders found</p>
+                <p className="text-xs sm:text-sm text-slate-600">No orders found</p>
               </div>
             ) : (
               <>
@@ -173,24 +171,24 @@ export default function Orders() {
                   `}</style>
                   <table className="w-full text-sm min-w-[800px]">
                     <thead>
-                      <tr style={{borderBottom: '1px solid var(--border-color)'}}>
-                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Order ID</th>
-                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Date</th>
-                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Network</th>
-                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Plan</th>
-                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Amount</th>
-                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Status</th>
-                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Action</th>
+                      <tr style={{borderBottom: '2px solid #e5e7eb'}}>
+                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap text-slate-600">Order ID</th>
+                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap text-slate-600">Date</th>
+                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap text-slate-600">Network</th>
+                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap text-slate-600">Plan</th>
+                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap text-slate-600">Amount</th>
+                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap text-slate-600">Status</th>
+                        <th className="text-left py-3 px-3 font-medium whitespace-nowrap text-slate-600">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredOrders.map(order => (
-                        <tr key={order.id || order._id} style={{borderBottom: '1px solid var(--border-color)'}}>
-                          <td className="py-3 px-3 font-mono text-xs">{order.orderNumber?.slice(-8) || 'N/A'}</td>
-                          <td className="py-3 px-3 text-sm whitespace-nowrap">{formatDate(order.date || order.createdAt)}</td>
-                          <td className="py-3 px-3 text-sm">{order.network || 'N/A'}</td>
-                          <td className="py-3 px-3 text-sm max-w-[150px] truncate">{order.dataAmount || 'N/A'}</td>
-                          <td className="py-3 px-3 font-bold text-primary-600 whitespace-nowrap">GHS {order.amount?.toFixed(2) || '0.00'}</td>
+                        <tr key={order.id || order._id} style={{borderBottom: '1px solid #e5e7eb'}}>
+                          <td className="py-3 px-3 font-mono text-xs text-slate-900">{order.orderNumber?.slice(-8) || 'N/A'}</td>
+                          <td className="py-3 px-3 text-sm whitespace-nowrap text-slate-900">{formatDate(order.date || order.createdAt)}</td>
+                          <td className="py-3 px-3 text-sm text-slate-900">{order.network || 'N/A'}</td>
+                          <td className="py-3 px-3 text-sm max-w-[150px] truncate text-slate-900">{order.dataAmount || 'N/A'}</td>
+                          <td className="py-3 px-3 font-bold text-blue-600 whitespace-nowrap">GHS {order.amount?.toFixed(2) || '0.00'}</td>
                           <td className="py-3 px-3">
                             <span className={`text-sm font-medium ${getStatusColor(order.status)}`}>
                               {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
@@ -224,25 +222,25 @@ export default function Orders() {
                   `}</style>
                   <table className="w-full text-sm min-w-[600px]">
                     <thead>
-                      <tr style={{borderBottom: '1px solid var(--border-color)'}}>
-                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Order</th>
-                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Date</th>
-                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Details</th>
-                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Amount</th>
-                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Status</th>
-                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap" style={{color: 'var(--text-secondary)'}}>Action</th>
+                      <tr style={{borderBottom: '2px solid #e5e7eb'}}>
+                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap text-slate-600">Order</th>
+                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap text-slate-600">Date</th>
+                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap text-slate-600">Details</th>
+                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap text-slate-600">Amount</th>
+                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap text-slate-600">Status</th>
+                        <th className="text-left py-2.5 px-2 font-medium text-xs whitespace-nowrap text-slate-600">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredOrders.map(order => (
-                        <tr key={order.id || order._id} style={{borderBottom: '1px solid var(--border-color)'}}>
-                          <td className="py-2.5 px-2 font-mono text-xs">{order.orderNumber?.slice(-6) || 'N/A'}</td>
-                          <td className="py-2.5 px-2 text-xs whitespace-nowrap">{formatDate(order.date || order.createdAt)}</td>
+                        <tr key={order.id || order._id} style={{borderBottom: '1px solid #e5e7eb'}}>
+                          <td className="py-2.5 px-2 font-mono text-xs text-slate-900">{order.orderNumber?.slice(-6) || 'N/A'}</td>
+                          <td className="py-2.5 px-2 text-xs whitespace-nowrap text-slate-900">{formatDate(order.date || order.createdAt)}</td>
                           <td className="py-2.5 px-2 text-xs">
-                            <div className="max-w-[120px] truncate">{order.network}</div>
-                            <div className="text-xs truncate" style={{color: 'var(--text-secondary)'}}>{order.dataAmount}</div>
+                            <div className="max-w-[120px] truncate text-slate-900">{order.network}</div>
+                            <div className="text-xs truncate text-slate-600">{order.dataAmount}</div>
                           </td>
-                          <td className="py-2.5 px-2 font-bold text-primary-600 text-xs whitespace-nowrap">GHS {order.amount?.toFixed(2) || '0.00'}</td>
+                          <td className="py-2.5 px-2 font-bold text-blue-600 text-xs whitespace-nowrap">GHS {order.amount?.toFixed(2) || '0.00'}</td>
                           <td className="py-2.5 px-2">
                             <span className={`text-xs font-medium ${getStatusColor(order.status)}`}>
                               {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
@@ -268,15 +266,14 @@ export default function Orders() {
                   {filteredOrders.map(order => (
                     <div 
                       key={order.id || order._id} 
-                      className="p-3 rounded-lg border" 
-                      style={{backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)'}}
+                      className="p-3 rounded-xl border-2 border-slate-200 bg-white hover:shadow-lg transition-all"
                     >
                       <div className="flex justify-between items-start gap-2 mb-2">
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-mono truncate" style={{color: 'var(--text-secondary)'}}>
+                          <p className="text-xs font-mono truncate text-slate-600">
                             #{order.orderNumber?.slice(-8) || 'N/A'}
                           </p>
-                          <p className="text-sm font-semibold mt-0.5 truncate">
+                          <p className="text-sm font-semibold mt-0.5 truncate text-slate-900">
                             {order.dataAmount} {order.network}
                           </p>
                         </div>
@@ -289,12 +286,12 @@ export default function Orders() {
                         </button>
                       </div>
                       
-                      <div className="flex justify-between items-center gap-2 pt-2 border-t" style={{borderColor: 'var(--border-color)'}}>
+                      <div className="flex justify-between items-center gap-2 pt-2 border-t border-slate-200">
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs truncate" style={{color: 'var(--text-secondary)'}}>
+                          <p className="text-xs truncate text-slate-600">
                             {formatDate(order.date || order.createdAt)} • {formatTime(order.date || order.createdAt)}
                           </p>
-                          <p className="text-sm font-bold text-primary-600 mt-0.5">
+                          <p className="text-sm font-bold text-blue-600 mt-0.5">
                             GHS {order.amount?.toFixed(2) || '0.00'}
                           </p>
                         </div>

@@ -26,24 +26,19 @@ export default function UserSidebar({ isOpen, onClose }) {
       />
 
       <aside
-        className={`fixed top-0 left-0 h-screen w-64 z-50 transition-transform ${
+        className={`fixed top-0 left-0 h-screen w-64 z-50 transition-transform bg-white border-r-2 border-slate-200 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
-        style={{
-          backgroundColor: 'var(--bg-primary)',
-          borderRight: '1px solid var(--border-color)'
-        }}
       >
         <div className="h-full flex flex-col">
-          <div className="p-6 flex items-center justify-between" style={{borderBottom: '1px solid var(--border-color)'}}>
+          <div className="p-6 flex items-center justify-between border-b-2 border-slate-200">
             <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition">
               <span className="text-2xl">📱</span>
-              <span className="font-bold" style={{color: 'var(--text-primary)'}}>DataHub</span>
+              <span className="font-bold text-slate-900">DataHub</span>
             </Link>
             <button
               onClick={onClose}
-              className="lg:hidden p-2 rounded-lg"
-              style={{color: 'var(--text-primary)'}}
+              className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition text-slate-600"
             >
               <X size={20} />
             </button>
@@ -58,13 +53,11 @@ export default function UserSidebar({ isOpen, onClose }) {
                   key={item.path}
                   to={item.path}
                   onClick={() => onClose()}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg transition"
-                  style={active ? {
-                    backgroundColor: '#5a1bff',
-                    color: 'white'
-                  } : {
-                    color: 'var(--text-secondary)'
-                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition ${
+                    active
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
                 >
                   <Icon size={20} />
                   <span className="font-medium">{item.label}</span>
@@ -73,7 +66,7 @@ export default function UserSidebar({ isOpen, onClose }) {
             })}
           </nav>
 
-          <div className="p-4 text-xs" style={{borderTop: '1px solid var(--border-color)', color: 'var(--text-secondary)'}}>
+          <div className="p-4 text-xs border-t-2 border-slate-200 text-slate-600">
             <p>User Dashboard v1.0</p>
           </div>
         </div>

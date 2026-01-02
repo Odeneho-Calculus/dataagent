@@ -45,12 +45,12 @@ export default function PurchaseVerificationModal({ isOpen, reference, onClose, 
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
       {status === 'verifying' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+          <div className="rounded-2xl shadow-xl max-w-lg w-full p-8 bg-white border-2 border-slate-200">
             <div className="flex flex-col items-center justify-center text-center">
-              <Loader size={64} className="text-blue-500 mb-4 animate-spin" />
-              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Verifying Payment</h3>
-              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>Please wait while we verify your payment...</p>
-              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Reference: {reference}</p>
+              <Loader size={64} className="text-blue-600 mb-4 animate-spin" />
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Verifying Payment</h3>
+              <p className="mb-4 text-slate-600">Please wait while we verify your payment...</p>
+              <p className="text-sm text-slate-600">Reference: {reference}</p>
             </div>
           </div>
         </div>
@@ -58,27 +58,27 @@ export default function PurchaseVerificationModal({ isOpen, reference, onClose, 
 
       {status === 'success' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+          <div className="rounded-2xl shadow-xl max-w-lg w-full p-8 bg-white border-2 border-slate-200">
             <div className="flex flex-col items-center justify-center text-center">
               <CheckCircle size={64} className="text-green-500 mb-4" />
-              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Data Bundle Purchased!</h3>
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Data Bundle Purchased!</h3>
               {orderDetails?.order && (
                 <div className="mb-4 text-left w-full">
-                  <p className="mb-2" style={{color: 'var(--text-secondary)'}}>
+                  <p className="mb-2 text-slate-600">
                     <strong>Order Number:</strong> {orderDetails.order.orderNumber}
                   </p>
-                  <p className="mb-2" style={{color: 'var(--text-secondary)'}}>
+                  <p className="mb-2 text-slate-600">
                     <strong>Data:</strong> {orderDetails.order.dataAmount} {orderDetails.order.network}
                   </p>
-                  <p className="mb-2" style={{color: 'var(--text-secondary)'}}>
+                  <p className="mb-2 text-slate-600">
                     <strong>Phone:</strong> {orderDetails.order.phoneNumber}
                   </p>
-                  <p className="mb-2" style={{color: 'var(--text-secondary)'}}>
+                  <p className="mb-2 text-slate-600">
                     <strong>Amount:</strong> GHS {orderDetails.order.amount?.toFixed(2) || '0.00'}
                   </p>
                 </div>
               )}
-              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Reference: {reference}</p>
+              <p className="text-sm text-slate-600">Reference: {reference}</p>
             </div>
           </div>
         </div>
@@ -86,14 +86,14 @@ export default function PurchaseVerificationModal({ isOpen, reference, onClose, 
 
       {status === 'failed' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+          <div className="rounded-2xl shadow-xl max-w-lg w-full p-8 bg-white border-2 border-slate-200">
             <div className="flex flex-col items-center justify-center text-center">
               <AlertCircle size={64} className="text-red-500 mb-4" />
-              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Payment Verification Failed</h3>
-              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>{ error || 'Unable to verify your payment'}</p>
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Payment Verification Failed</h3>
+              <p className="mb-4 text-slate-600">{ error || 'Unable to verify your payment'}</p>
               <button
                 onClick={onClose}
-                className="mt-4 btn btn-primary"
+                className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition"
               >
                 Close
               </button>

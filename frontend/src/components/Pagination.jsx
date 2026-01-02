@@ -41,17 +41,17 @@ export default function Pagination({ currentPage, totalPages, onPageChange, isLo
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800 rounded-b-lg">
-      <div className="text-sm text-slate-600 dark:text-slate-400">
-        Page <span className="font-medium text-slate-900 dark:text-white">{currentPage}</span> of{' '}
-        <span className="font-medium text-slate-900 dark:text-white">{totalPages}</span>
+    <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200 rounded-b-2xl">
+      <div className="text-sm text-slate-600">
+        Page <span className="font-medium text-slate-900">{currentPage}</span> of{' '}
+        <span className="font-medium text-slate-900">{totalPages}</span>
       </div>
 
       <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1 || isLoading}
-          className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="p-2 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
           title="Previous page"
         >
           <ChevronLeft size={18} />
@@ -59,7 +59,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, isLo
 
         {pageNumbers.map((page, index) => (
           page === '...' ? (
-            <span key={`ellipsis-${index}`} className="px-2 text-slate-600 dark:text-slate-400">
+            <span key={`ellipsis-${index}`} className="px-2 text-slate-600">
               ...
             </span>
           ) : (
@@ -69,8 +69,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange, isLo
               disabled={isLoading}
               className={`px-3 py-2 rounded-lg font-medium transition ${
                 page === currentPage
-                  ? 'bg-blue-600 text-white'
-                  : 'border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                  : 'border-2 border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed'
               }`}
             >
               {page}
@@ -81,7 +81,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, isLo
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages || isLoading}
-          className="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="p-2 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
           title="Next page"
         >
           <ChevronRight size={18} />

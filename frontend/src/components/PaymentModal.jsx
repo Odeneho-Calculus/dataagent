@@ -69,12 +69,12 @@ export default function PaymentModal({ isOpen, onClose, accessCode, reference, a
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
       {status === 'success' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+          <div className="rounded-2xl shadow-xl max-w-lg w-full p-8 bg-white border-2 border-slate-200">
             <div className="flex flex-col items-center justify-center text-center">
               <CheckCircle size={64} className="text-green-500 mb-4" />
-              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Payment Successful!</h3>
-              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>Your wallet has been credited with GHS {amount.toFixed(2)}</p>
-              <p className="text-sm" style={{color: 'var(--text-secondary)'}}>Reference: {reference}</p>
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Payment Successful!</h3>
+              <p className="mb-4 text-slate-600">Your wallet has been credited with GHS {amount.toFixed(2)}</p>
+              <p className="text-sm text-slate-600">Reference: {reference}</p>
             </div>
           </div>
         </div>
@@ -82,14 +82,14 @@ export default function PaymentModal({ isOpen, onClose, accessCode, reference, a
 
       {status === 'cancelled' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+          <div className="rounded-2xl shadow-xl max-w-lg w-full p-8 bg-white border-2 border-slate-200">
             <div className="flex flex-col items-center justify-center text-center">
               <AlertCircle size={64} className="text-yellow-500 mb-4" />
-              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Payment Cancelled</h3>
-              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>You cancelled the payment. Your wallet was not updated.</p>
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Payment Cancelled</h3>
+              <p className="mb-4 text-slate-600">You cancelled the payment. Your wallet was not updated.</p>
               <button
                 onClick={onClose}
-                className="mt-4 btn btn-primary"
+                className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition"
               >
                 Close
               </button>
@@ -100,14 +100,14 @@ export default function PaymentModal({ isOpen, onClose, accessCode, reference, a
 
       {status === 'failed' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="rounded-lg shadow-xl max-w-lg w-full p-8 card">
+          <div className="rounded-2xl shadow-xl max-w-lg w-full p-8 bg-white border-2 border-slate-200">
             <div className="flex flex-col items-center justify-center text-center">
               <AlertCircle size={64} className="text-red-500 mb-4" />
-              <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-primary)'}}>Payment Failed</h3>
-              <p className="mb-4" style={{color: 'var(--text-secondary)'}}>{ error || 'Unable to process your payment'}</p>
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Payment Failed</h3>
+              <p className="mb-4 text-slate-600">{ error || 'Unable to process your payment'}</p>
               <button
                 onClick={onClose}
-                className="mt-4 btn btn-primary"
+                className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition"
               >
                 Close
               </button>

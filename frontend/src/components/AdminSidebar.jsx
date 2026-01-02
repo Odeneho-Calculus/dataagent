@@ -63,7 +63,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
                   onClick={() => onClose()}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg transition"
                   style={active ? {
-                    backgroundColor: '#5a1bff',
+                    backgroundColor: '#2563eb',
                     color: 'white'
                   } : {
                     color: 'var(--text-secondary)'
