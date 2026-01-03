@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Search, Edit2, Ban, Clock, Trash2, Menu, Eye, Info, RotateCcw } from 'lucide-react';
+import { Search, Edit2, Ban, Clock, Trash2, Eye, Info, RotateCcw, Users, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { useSidebar } from '../context/SidebarContext';
 import { admin as adminAPI } from '../services/api';
 
 export default function AdminUsers() {
+  const { sidebarOpen, closeSidebar } = useSidebar();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -13,7 +15,6 @@ export default function AdminUsers() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [showBanModal, setShowBanModal] = useState(false);
@@ -192,36 +193,121 @@ export default function AdminUsers() {
     return 'Active';
   };
 
+  const activeUsers = users.filter(u => u.status === 'active').length;
+  const bannedUsers = users.filter(u => u.status === 'banned').length;
+  const suspendedUsers = users.filter(u => u.status === 'suspended').length;
+  const totalBalance = users.reduce((sum, u) => sum + (u.balance || 0), 0);
+
   return (
     <div className="flex h-screen">
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-bold">Manage Users</h1>
-        </div>
-        
-        <div className="flex-1 overflow-auto bg-white dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">Manage Users</h1>
+        <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-50 via-white to-blue-50">
+          <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+            {/* Header */}
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2">
+                Manage Users
+              </h1>
+              <p className="text-sm sm:text-base text-slate-600">
+                Monitor and manage user accounts, roles, and status
+              </p>
+            </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
+              <div className="mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-sm sm:text-base flex items-center gap-3">
+                <AlertCircle size={20} className="flex-shrink-0" />
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300">
+              <div className="mb-6 p-3 sm:p-4 bg-green-50 border-2 border-green-200 rounded-2xl text-green-700 text-sm sm:text-base flex items-center gap-3">
+                <CheckCircle size={20} className="flex-shrink-0" />
                 {success}
               </div>
             )}
 
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Total Users</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{users.length}</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Active Users</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{activeUsers}</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                    <Ban className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Banned Users</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{bannedUsers}</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                    <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Suspended</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{suspendedUsers}</p>
+              </div>
+            </div>
+
+            {/* Balance Summary & Search */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 mb-6 sm:mb-8">
+              <div className="lg:col-span-2 bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all">
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <TrendingUp size={20} className="text-blue-600" />
+                    Total Balance
+                  </h2>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">
+                    GHS {totalBalance.toFixed(2)}
+                  </p>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style={{width: '45%'}}></div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all">
+                <h3 className="text-sm font-semibold text-slate-600 mb-3">User Distribution</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Active</span>
+                    <span className="font-bold text-green-600">{Math.round((activeUsers/users.length)*100)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Banned</span>
+                    <span className="font-bold text-red-600">{Math.round((bannedUsers/users.length)*100)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Suspended</span>
+                    <span className="font-bold text-orange-600">{Math.round((suspendedUsers/users.length)*100)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Search */}
             <div className="mb-6 flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -233,65 +319,70 @@ export default function AdminUsers() {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-400 focus:ring-0 text-sm hover:border-slate-300"
                 />
               </div>
             </div>
 
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-              </div>
-            ) : users.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-slate-600 dark:text-slate-400">No users found</p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                          Balance
-                        </th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
+            {/* Users Table */}
+            <div className="bg-white rounded-2xl border-2 border-slate-200 hover:border-slate-300 transition-all overflow-hidden">
+              {loading ? (
+                <div className="flex justify-center py-16">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600">Loading users...</p>
+                  </div>
+                </div>
+              ) : users.length === 0 ? (
+                <div className="text-center py-16">
+                  <Users size={48} className="mx-auto text-slate-300 mb-4" />
+                  <p className="text-slate-600 text-lg">No users found</p>
+                  <p className="text-slate-500 text-sm">Try adjusting your search filters</p>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gradient-to-r from-slate-100 to-blue-50 border-b-2 border-slate-200">
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">
+                            User
+                          </th>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">
+                            Balance
+                          </th>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">
+                            Status
+                          </th>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
                       {users.map((user) => (
                         <tr
                           key={user._id}
-                          className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${
-                            user.deletedAt ? 'opacity-50' : ''
+                          className={`hover:bg-blue-50 transition ${
+                            user.deletedAt ? 'opacity-60 bg-slate-50' : ''
                           }`}
                         >
-                          <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
-                            {user.name}
+                          <td className="px-4 sm:px-6 py-4">
+                            <div className="flex flex-col gap-1">
+                              <p className="text-sm font-semibold text-slate-900">{user.name}</p>
+                              <p className="text-xs text-slate-600">{user.email}</p>
+                            </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                            {user.email}
+                          <td className="px-4 sm:px-6 py-4">
+                            <p className="text-sm font-bold text-blue-600">GHS {user.balance?.toFixed(2) || '0.00'}</p>
                           </td>
-                          <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
-                            GHS {user.balance?.toFixed(2) || '0.00'}
-                          </td>
-                          <td className="px-6 py-4 text-sm">
+                          <td className="px-4 sm:px-6 py-4">
                             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user)}`}>
                               {getStatusText(user)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm flex gap-1 flex-wrap">
+                          <td className="px-4 sm:px-6 py-4">
+                            <div className="flex gap-1 flex-wrap">
                             {user.deletedAt ? (
                               <button
                                 onClick={() => handleRestoreUser(user._id)}
@@ -376,36 +467,39 @@ export default function AdminUsers() {
                                 </button>
                               </>
                             )}
+                            </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
-                  </table>
-                </div>
-
-                <div className="mt-6 flex justify-between items-center">
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Page {page} of {totalPages}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setPage(Math.max(1, page - 1))}
-                      disabled={page === 1}
-                      className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg disabled:opacity-50"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setPage(Math.min(totalPages, page + 1))}
-                      disabled={page === totalPages}
-                      className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg disabled:opacity-50"
-                    >
-                      Next
-                    </button>
+                    </table>
                   </div>
-                </div>
-              </>
-            )}
+                  
+                  {/* Pagination */}
+                  <div className="p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                    <p className="text-sm text-slate-600">
+                      Page {page} of {totalPages} • {users.length} users total
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPage(Math.max(1, page - 1))}
+                        disabled={page === 1}
+                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                      >
+                        ← Previous
+                      </button>
+                      <button
+                        onClick={() => setPage(Math.min(totalPages, page + 1))}
+                        disabled={page === totalPages}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

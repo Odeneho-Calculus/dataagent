@@ -1,23 +1,30 @@
 import { useState, useEffect } from 'react';
-import { Menu, Edit2, Trash2, RefreshCw, X } from 'lucide-react';
+import { Edit2, Trash2, RefreshCw, Eye, Database, TrendingUp, AlertCircle, CheckCircle, Search } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
-import Pagination from '../components/Pagination';
+import ConfirmDialog from '../components/ConfirmDialog';
+import ViewPlanModal from '../components/ViewPlanModal';
+import EditPricesModal from '../components/EditPricesModal';
+import { useSidebar } from '../context/SidebarContext';
 import { dataplans } from '../services/api';
 
 export default function AdminDataPlans() {
+  const { sidebarOpen, closeSidebar } = useSidebar();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [success, setSuccess] = useState('');
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [editingId, setEditingId] = useState(null);
-  const [editCost, setEditCost] = useState('');
-  const [editSelling, setEditSelling] = useState('');
-  const [deleting, setDeleting] = useState(null);
+
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditPricesModal, setShowEditPricesModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showClearEditsConfirm, setShowClearEditsConfirm] = useState(false);
+  const [editPricesSaving, setEditPricesSaving] = useState(false);
 
   useEffect(() => {
     setPage(1);
@@ -31,22 +38,27 @@ export default function AdminDataPlans() {
     try {
       setLoading(true);
       const response = await dataplans.list(selectedNetwork, '', page, 10);
-      console.log('[AdminDataPlans] API Response:', {
-        success: response.success,
-        plansCount: response.plans?.length,
-        pagination: response.pagination,
-        totalPages: response.pagination?.pages,
-      });
       if (response.success) {
         setPlans(response.plans);
         setTotalPages(response.pagination?.pages || 0);
       }
     } catch (err) {
-      console.error('[AdminDataPlans] Fetch error:', err);
       setError(err.message || 'Failed to fetch data plans');
     } finally {
       setLoading(false);
     }
+  };
+
+  const showMessage = (msg, isError = false) => {
+    if (isError) {
+      setError(msg);
+    } else {
+      setSuccess(msg);
+    }
+    setTimeout(() => {
+      setError('');
+      setSuccess('');
+    }, 3000);
   };
 
   const getFilteredPlans = () => {
@@ -61,328 +73,427 @@ export default function AdminDataPlans() {
       setSyncing(true);
       const response = await dataplans.sync();
       if (response.success) {
-        alert(`Sync complete: ${response.stats.synced} new, ${response.stats.updated} updated`);
         setPage(1);
         await fetchDataPlans();
+        showMessage(`Sync complete: ${response.stats.synced} new, ${response.stats.updated} updated`);
       }
     } catch (err) {
-      alert(`Sync failed: ${err.message}`);
+      showMessage(`Sync failed: ${err.message}`, true);
     } finally {
       setSyncing(false);
     }
   };
 
-  const handleEditPrices = (plan) => {
-    setEditingId(plan._id);
-    setEditCost(Number(plan.costPrice) || 0);
-    setEditSelling(Number(plan.sellingPrice) || 0);
+  const handleOpenEditPrices = (plan) => {
+    setSelectedPlan(plan);
+    setShowEditPricesModal(true);
   };
 
-  const handleSavePrices = async () => {
+  const handleSavePrices = async (costPrice, sellingPrice) => {
+    if (!selectedPlan) return;
     try {
-      const costPrice = isNaN(editCost) ? 0 : Number(editCost);
-      const sellingPrice = isNaN(editSelling) ? 0 : Number(editSelling);
-      const response = await dataplans.updatePrices(editingId, costPrice, sellingPrice);
+      setEditPricesSaving(true);
+      const response = await dataplans.updatePrices(selectedPlan._id, costPrice, sellingPrice);
       if (response.success) {
-        setPlans(plans.map(p => p._id === editingId ? response.plan : p));
-        setEditingId(null);
+        setPlans(plans.map(p => p._id === selectedPlan._id ? response.plan : p));
+        setShowEditPricesModal(false);
+        setSelectedPlan(null);
+        showMessage('Data plan prices updated successfully');
       }
     } catch (err) {
-      alert(`Failed to update prices: ${err.message}`);
-    }
-  };
-
-  const handleClearEdits = async (planId) => {
-    if (!window.confirm('Revert prices to original API values?')) return;
-
-    try {
-      const response = await dataplans.clearEdits(planId);
-      if (response.success) {
-        setPlans(plans.map(p => p._id === planId ? response.plan : p));
-      }
-    } catch (err) {
-      alert(`Failed to clear edits: ${err.message}`);
-    }
-  };
-
-  const handleToggleStatus = async (planId) => {
-    try {
-      const response = await dataplans.toggleStatus(planId);
-      if (response.success) {
-        setPlans(plans.map(p => p._id === planId ? response.plan : p));
-      }
-    } catch (err) {
-      alert(`Failed to toggle status: ${err.message}`);
-    }
-  };
-
-  const handleDelete = async (planId) => {
-    if (!window.confirm('Are you sure you want to delete this plan?')) return;
-
-    try {
-      setDeleting(planId);
-      const response = await dataplans.delete(planId);
-      if (response.success) {
-        await fetchDataPlans();
-      }
-    } catch (err) {
-      alert(`Failed to delete plan: ${err.message}`);
+      showMessage(`Failed to update prices: ${err.message}`, true);
     } finally {
-      setDeleting(null);
+      setEditPricesSaving(false);
     }
   };
 
-  const calculateDiscount = (costPrice, sellingPrice) => {
-    if (costPrice <= 0) return 0;
-    return (((costPrice - sellingPrice) / costPrice) * 100).toFixed(2);
+  const handleOpenClearEdits = (plan) => {
+    setSelectedPlan(plan);
+    setShowClearEditsConfirm(true);
+  };
+
+  const confirmClearEdits = async () => {
+    if (!selectedPlan) return;
+    try {
+      const response = await dataplans.clearEdits(selectedPlan._id);
+      if (response.success) {
+        setPlans(plans.map(p => p._id === selectedPlan._id ? response.plan : p));
+        setShowClearEditsConfirm(false);
+        setSelectedPlan(null);
+        showMessage('Data plan edits cleared successfully');
+      }
+    } catch (err) {
+      showMessage(`Failed to clear edits: ${err.message}`, true);
+    }
+  };
+
+  const handleToggleStatus = async (plan) => {
+    try {
+      const response = await dataplans.toggleStatus(plan._id);
+      if (response.success) {
+        setPlans(plans.map(p => p._id === plan._id ? response.plan : p));
+        showMessage(`Data plan ${response.plan.status === 'active' ? 'activated' : 'deactivated'} successfully`);
+      }
+    } catch (err) {
+      showMessage(`Failed to toggle status: ${err.message}`, true);
+    }
+  };
+
+  const handleOpenDelete = (plan) => {
+    setSelectedPlan(plan);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedPlan) return;
+    try {
+      const response = await dataplans.delete(selectedPlan._id);
+      if (response.success) {
+        setShowDeleteConfirm(false);
+        await fetchDataPlans();
+        setSelectedPlan(null);
+        showMessage('Data plan deleted successfully');
+      }
+    } catch (err) {
+      showMessage(`Failed to delete plan: ${err.message}`, true);
+    }
   };
 
   const filteredPlans = getFilteredPlans();
+  const activePlans = filteredPlans.filter(p => p.status === 'active').length;
+  const inactivePlans = filteredPlans.filter(p => p.status !== 'active').length;
+  const outOfStockPlans = filteredPlans.filter(p => !p.inStock).length;
+  const totalMargin = filteredPlans.reduce((sum, p) => {
+    const margin = ((p.sellingPrice - p.costPrice) / p.costPrice) * 100;
+    return sum + margin;
+  }, 0);
+  const avgMargin = filteredPlans.length > 0 ? (totalMargin / filteredPlans.length).toFixed(2) : 0;
 
   return (
     <div className="flex h-screen">
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-bold">Manage Data Plans</h1>
-        </div>
-
-        <div className="flex-1 overflow-auto bg-white dark:bg-slate-950">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+        <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-50 via-white to-blue-50">
+          <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+            {/* Header */}
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2">
                 Manage Data Plans
               </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Sync data plans from Topza API and manage pricing
+              <p className="text-sm sm:text-base text-slate-600">
+                Sync and manage data plan pricing, margins, and availability
               </p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
+              <div className="mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-sm sm:text-base flex items-center gap-3">
+                <AlertCircle size={20} className="flex-shrink-0" />
                 {error}
               </div>
             )}
 
-            <div className="mb-6 flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={handleSync}
-                disabled={syncing}
-                className="btn btn-primary flex items-center gap-2 px-4 py-2 rounded-lg"
-              >
-                <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
-                {syncing ? 'Syncing...' : 'Sync from Topza'}
-              </button>
-            </div>
-
-            <div className="mb-6 flex flex-col sm:flex-row gap-4">
-              <input
-                type="text"
-                placeholder="Search by plan name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-              />
-            </div>
-
-            <div className="mb-6 flex gap-2 flex-wrap">
-              <button
-                onClick={() => setSelectedNetwork('')}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  selectedNetwork === ''
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600'
-                }`}
-              >
-                All Networks
-              </button>
-              {['MTN', 'TELECEL', 'AIRTELTIGO'].map(network => (
-                <button
-                  key={network}
-                  onClick={() => setSelectedNetwork(network)}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
-                    selectedNetwork === network
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600'
-                  }`}
-                >
-                  {network}
-                </button>
-              ))}
-            </div>
-
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-4"></div>
-                <p className="text-slate-600 dark:text-slate-400">Loading data plans...</p>
-              </div>
-            ) : filteredPlans.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-slate-600 dark:text-slate-400">No data plans found</p>
-              </div>
-            ) : (
-              <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Network</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Plan Name</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Data</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Cost Price</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Admin Price</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Validity</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Status</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Margin</th>
-                        <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900 dark:text-white">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                      {filteredPlans.map(plan => {
-                        const margin = ((plan.sellingPrice - plan.costPrice) / plan.costPrice * 100).toFixed(2);
-                        return (
-                        <tr key={plan._id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 ${!plan.inStock ? 'opacity-60 bg-slate-100 dark:bg-slate-800' : ''}`}>
-                          <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{plan.network}</td>
-                          <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                            <div className="flex items-center gap-2">
-                              {plan.planName}
-                              {!plan.inStock && (
-                                <span className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs px-2 py-1 rounded">Out of Stock</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-slate-900 dark:text-white">{plan.dataSize}</td>
-                          <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">GHS {plan.costPrice.toFixed(2)}</td>
-                          <td className="px-6 py-4 text-sm font-medium text-blue-600 dark:text-blue-400">GHS {plan.sellingPrice.toFixed(2)}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{plan.validity}</td>
-                          <td className="px-6 py-4 text-sm">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              plan.status === 'active'
-                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                                : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                            }`}>
-                              {plan.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">
-                            {margin}%
-                          </td>
-                          <td className="px-6 py-4 text-sm">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleEditPrices(plan)}
-                                disabled={!plan.inStock}
-                                className={`p-1 rounded ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200 dark:hover:bg-slate-700'}`}
-                                title={!plan.inStock ? 'Cannot edit out-of-stock plans' : 'Edit prices'}
-                              >
-                                <Edit2 size={16} className="text-blue-600 dark:text-blue-400" />
-                              </button>
-                              <button
-                                onClick={() => handleToggleStatus(plan._id)}
-                                disabled={!plan.inStock}
-                                className={`p-1 rounded ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200 dark:hover:bg-slate-700'}`}
-                                title={!plan.inStock ? 'Cannot toggle status for out-of-stock plans' : 'Toggle status'}
-                              >
-                                <RefreshCw size={16} className="text-green-600 dark:text-green-400" />
-                              </button>
-                              {plan.isEdited && plan.inStock && (
-                                <button
-                                  onClick={() => handleClearEdits(plan._id)}
-                                  className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-xs"
-                                  title="Clear edits"
-                                >
-                                  <X size={16} className="text-orange-600 dark:text-orange-400" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => handleDelete(plan._id)}
-                                disabled={deleting === plan._id || !plan.inStock}
-                                className={`p-1 rounded ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50'}`}
-                                title={!plan.inStock ? 'Cannot delete out-of-stock plans' : 'Delete'}
-                              >
-                                <Trash2 size={16} className="text-red-600 dark:text-red-400" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <Pagination 
-                  currentPage={page} 
-                  totalPages={totalPages} 
-                  onPageChange={setPage}
-                  isLoading={loading}
-                />
+            {success && (
+              <div className="mb-6 p-3 sm:p-4 bg-green-50 border-2 border-green-200 rounded-2xl text-green-700 text-sm sm:text-base flex items-center gap-3">
+                <CheckCircle size={20} className="flex-shrink-0" />
+                {success}
               </div>
             )}
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <Database className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Total Plans</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{filteredPlans.length}</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Active Plans</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{activePlans}</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Out of Stock</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{outOfStockPlans}</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-1">Avg Margin</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{avgMargin}%</p>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all mb-6 sm:mb-8">
+              {/* Search & Sync Row */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by plan name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-400 focus:ring-0 text-sm hover:border-slate-300"
+                  />
+                </div>
+                <button
+                  onClick={handleSync}
+                  disabled={syncing}
+                  className="px-4 sm:px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
+                >
+                  <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+                  {syncing ? 'Syncing...' : 'Sync'}
+                </button>
+              </div>
+
+              {/* Network Filter Row */}
+              <div>
+                <p className="text-xs font-semibold text-slate-600 mb-2 block">Network</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedNetwork('')}
+                    className={`px-4 py-2 rounded-lg font-medium transition text-sm whitespace-nowrap ${
+                      selectedNetwork === ''
+                        ? 'bg-blue-100 text-blue-900 border-2 border-blue-300'
+                        : 'bg-slate-100 text-slate-900 hover:bg-slate-200 border-2 border-slate-200'
+                    }`}
+                  >
+                    All Networks
+                  </button>
+                  {['MTN', 'TELECEL', 'AIRTELTIGO'].map(network => (
+                    <button
+                      key={network}
+                      onClick={() => setSelectedNetwork(network)}
+                      className={`px-4 py-2 rounded-lg font-medium transition text-sm whitespace-nowrap ${
+                        selectedNetwork === network
+                          ? 'bg-blue-100 text-blue-900 border-2 border-blue-300'
+                          : 'bg-slate-100 text-slate-900 hover:bg-slate-200 border-2 border-slate-200'
+                      }`}
+                    >
+                      {network}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Data Plans Table */}
+            <div className="bg-white rounded-2xl border-2 border-slate-200 hover:border-slate-300 transition-all overflow-hidden">
+              {loading ? (
+                <div className="flex justify-center py-16">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600">Loading data plans...</p>
+                  </div>
+                </div>
+              ) : filteredPlans.length === 0 ? (
+                <div className="text-center py-16">
+                  <Database size={48} className="mx-auto text-slate-300 mb-4" />
+                  <p className="text-slate-600 text-lg">No data plans found</p>
+                  <p className="text-slate-500 text-sm">Try adjusting your search or network filter</p>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-slate-100 to-blue-50 border-b-2 border-slate-200">
+                        <tr>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">Plan</th>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">Pricing</th>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">Margin</th>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">Status</th>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {filteredPlans.map(plan => {
+                          const margin = ((plan.sellingPrice - plan.costPrice) / plan.costPrice * 100).toFixed(2);
+                          return (
+                            <tr
+                              key={plan._id}
+                              className={`hover:bg-blue-50 transition ${
+                                !plan.inStock ? 'opacity-60 bg-slate-50' : ''
+                              }`}
+                            >
+                              <td className="px-4 sm:px-6 py-4">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm font-semibold text-slate-900">{plan.planName}</p>
+                                    {!plan.inStock && (
+                                      <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium">Out of Stock</span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-slate-600">{plan.network} • {plan.dataSize} • {plan.validity}</p>
+                                </div>
+                              </td>
+                              <td className="px-4 sm:px-6 py-4">
+                                <div className="flex flex-col gap-1">
+                                  <p className="text-xs text-slate-600">Cost: <span className="font-medium text-slate-900">GHS {plan.costPrice.toFixed(2)}</span></p>
+                                  <p className="text-sm font-bold text-blue-600">Admin: GHS {plan.sellingPrice.toFixed(2)}</p>
+                                </div>
+                              </td>
+                              <td className="px-4 sm:px-6 py-4">
+                                <p className="text-sm font-medium text-slate-900">{margin}%</p>
+                              </td>
+                              <td className="px-4 sm:px-6 py-4">
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  plan.status === 'active'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-red-100 text-red-700'
+                                }`}>
+                                  {plan.status}
+                                </span>
+                              </td>
+                              <td className="px-4 sm:px-6 py-4">
+                                <div className="flex gap-1 flex-wrap">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedPlan(plan);
+                                      setShowViewModal(true);
+                                    }}
+                                    className="p-2 hover:bg-slate-100 rounded-lg transition"
+                                    title="View Details"
+                                  >
+                                    <Eye className="w-4 h-4 text-cyan-600" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenEditPrices(plan)}
+                                    disabled={!plan.inStock}
+                                    className={`p-2 rounded-lg transition ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100'}`}
+                                    title={!plan.inStock ? 'Cannot edit out-of-stock plans' : 'Edit prices'}
+                                  >
+                                    <Edit2 className="w-4 h-4 text-blue-600" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleToggleStatus(plan)}
+                                    disabled={!plan.inStock}
+                                    className={`p-2 rounded-lg transition ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100'}`}
+                                    title={!plan.inStock ? 'Cannot toggle status for out-of-stock plans' : 'Toggle status'}
+                                  >
+                                    <RefreshCw className="w-4 h-4 text-green-600" />
+                                  </button>
+                                  {plan.isEdited && plan.inStock && (
+                                    <button
+                                      onClick={() => handleOpenClearEdits(plan)}
+                                      className="p-2 hover:bg-slate-100 rounded-lg transition"
+                                      title="Clear edits"
+                                    >
+                                      <AlertCircle className="w-4 h-4 text-orange-600" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => handleOpenDelete(plan)}
+                                    disabled={!plan.inStock}
+                                    className={`p-2 rounded-lg transition ${!plan.inStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-100'}`}
+                                    title={!plan.inStock ? 'Cannot delete out-of-stock plans' : 'Delete'}
+                                  >
+                                    <Trash2 className="w-4 h-4 text-red-600" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                    <p className="text-sm text-slate-600">
+                      Page {page} of {totalPages} • {filteredPlans.length} plans total
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPage(Math.max(1, page - 1))}
+                        disabled={page === 1}
+                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                      >
+                        ← Previous
+                      </button>
+                      <button
+                        onClick={() => setPage(Math.min(totalPages, page + 1))}
+                        disabled={page === totalPages}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {editingId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Set Admin Price</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Cost Price from Topza (Read-only)
-                </label>
-                <input
-                  type="number"
-                  value={isNaN(editCost) ? 0 : editCost}
-                  disabled
-                  step="0.01"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white cursor-not-allowed"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Admin Price (What users pay) - GHS
-                </label>
-                <input
-                  type="number"
-                  value={isNaN(editSelling) ? 0 : editSelling}
-                  onChange={(e) => setEditSelling(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                  step="0.01"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                />
-              </div>
-              <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  <span className="font-medium">Margin:</span> {isNaN(editCost) || isNaN(editSelling) ? '0' : calculateDiscount(editCost, editSelling)}%
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-                  Your profit: GHS {(isNaN(editCost) || isNaN(editSelling) ? 0 : (editSelling - editCost)).toFixed(2)}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setEditingId(null)}
-                className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSavePrices}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ViewPlanModal
+        plan={selectedPlan}
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedPlan(null);
+        }}
+      />
+
+      <EditPricesModal
+        plan={selectedPlan}
+        isOpen={showEditPricesModal}
+        onClose={() => {
+          setShowEditPricesModal(false);
+          setSelectedPlan(null);
+        }}
+        onSave={handleSavePrices}
+        loading={editPricesSaving}
+      />
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Data Plan"
+        message={selectedPlan ? `Are you sure you want to delete "${selectedPlan.planName}"? This action cannot be undone.` : ''}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDangerous={true}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setSelectedPlan(null);
+        }}
+      />
+
+      <ConfirmDialog
+        isOpen={showClearEditsConfirm}
+        title="Clear Price Edits"
+        message={selectedPlan ? `Revert "${selectedPlan.planName}" prices to original API values?` : ''}
+        confirmText="Clear"
+        cancelText="Cancel"
+        isDangerous={false}
+        onConfirm={confirmClearEdits}
+        onCancel={() => {
+          setShowClearEditsConfirm(false);
+          setSelectedPlan(null);
+        }}
+      />
     </div>
   );
 }

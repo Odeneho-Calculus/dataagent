@@ -216,20 +216,28 @@ exports.getTransactions = async (req, res) => {
         .populate('userId', 'name email')
         .sort({ createdAt: -1 });
 
-      const formattedOrders = orders.map(order => ({
-        _id: order._id,
-        userId: order.userId,
-        type: 'data_purchase',
-        amount: order.amount,
-        currency: 'GHS',
-        status: order.status === 'completed' ? 'successful' : order.status,
-        reference: order.orderNumber,
-        description: `${order.planName} - ${order.dataAmount}`,
-        isAPI: false,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt,
-        _isOrder: true,
-      }));
+      const formattedOrders = orders.map(order => {
+        console.log('[Admin Get Transactions] Data purchase order:', {
+          orderId: order._id,
+          amount: order.amount,
+          dataPlanId: order.dataPlanId,
+          status: order.status,
+        });
+        return {
+          _id: order._id,
+          userId: order.userId,
+          type: 'data_purchase',
+          amount: order.amount,
+          currency: 'GHS',
+          status: order.status === 'completed' ? 'successful' : order.status,
+          reference: order.orderNumber,
+          description: `${order.planName} - ${order.dataAmount}`,
+          isAPI: false,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+          _isOrder: true,
+        };
+      });
 
       allTransactions.push(...formattedOrders);
     }

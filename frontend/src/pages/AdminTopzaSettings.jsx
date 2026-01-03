@@ -1,16 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Menu, RotateCcw, AlertCircle, RefreshCw, CheckCircle, DollarSign, Clock, Eye, X } from 'lucide-react';
+import { RotateCcw, AlertCircle, RefreshCw, CheckCircle, DollarSign, Clock, Eye, X } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import Pagination from '../components/Pagination';
+import { useSidebar } from '../context/SidebarContext';
 import { admin as adminAPI } from '../services/api';
 
 export default function AdminTopzaSettings() {
+  const { sidebarOpen, closeSidebar } = useSidebar();
   const [walletData, setWalletData] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -125,7 +126,7 @@ export default function AdminTopzaSettings() {
   if (loading && !walletData) {
     return (
       <div className="flex h-screen">
-        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
         <div className="flex-1 flex items-center justify-center bg-white dark:bg-slate-950">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-4"></div>
@@ -138,18 +139,8 @@ export default function AdminTopzaSettings() {
 
   return (
     <div className="flex h-screen">
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-bold">Topza Wallet</h1>
-        </div>
-
         <div className="flex-1 overflow-auto bg-white dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">

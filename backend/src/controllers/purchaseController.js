@@ -44,6 +44,14 @@ exports.buyDataBundle = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Data plan not found' });
     }
 
+    console.log('[Buy Data Bundle] Plan prices:', {
+      planId: plan._id,
+      sellingPrice: plan.sellingPrice,
+      costPrice: plan.costPrice,
+      originalCostPrice: plan.originalCostPrice,
+      isEdited: plan.isEdited,
+    });
+
     if (plan.status !== 'active') {
       return res.status(400).json({ success: false, message: 'This data plan is not available' });
     }

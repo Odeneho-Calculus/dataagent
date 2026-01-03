@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Search, Edit2, RotateCcw, Menu, Eye, Settings } from 'lucide-react';
+import { Search, Edit2, RotateCcw, Eye, Settings } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { useSidebar } from '../context/SidebarContext';
 import { admin as adminAPI } from '../services/api';
 
 export default function AdminReferrals() {
+  const { sidebarOpen, closeSidebar } = useSidebar();
   const [referrals, setReferrals] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,6 @@ export default function AdminReferrals() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedReferral, setSelectedReferral] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('referrals');
 
   const [showEditEarningsModal, setShowEditEarningsModal] = useState(false);
@@ -127,18 +128,8 @@ export default function AdminReferrals() {
 
   return (
     <div className="flex h-screen">
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="lg:hidden sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-bold">Referral Management</h1>
-        </div>
-
         <div className="flex-1 overflow-auto bg-white dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">

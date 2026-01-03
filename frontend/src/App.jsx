@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SidebarProvider } from './context/SidebarContext';
 import Navbar from './components/Navbar';
+import AdminHeader from './components/AdminHeader';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
 import Home from './pages/Home';
@@ -30,7 +31,7 @@ function AppContent() {
 
   return (
     <>
-      {!isAdminRoute && <Navbar />}
+      {isAdminRoute ? <AdminHeader /> : <Navbar />}
       <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
