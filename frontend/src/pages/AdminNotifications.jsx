@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Trash2, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, X, Search, Filter } from 'lucide-react';
+import { Trash2, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, X, Search, Database } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
-import Pagination from '../components/Pagination';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useSidebar } from '../context/SidebarContext';
 import { admin as adminAPI } from '../services/api';
 
@@ -16,11 +16,29 @@ export default function AdminNotifications() {
   const [typeFilter, setTypeFilter] = useState('');
   const [isReadFilter, setIsReadFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [success, setSuccess] = useState('');
+  
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
   
   const [stats, setStats] = useState({
     unreadCount: 0,
     totalCount: 0,
   });
+
+  const showMessage = (msg, isError = false) => {
+    if (isError) {
+      setError(msg);
+    } else {
+      setSuccess(msg);
+    }
+    setTimeout(() => {
+      setError('');
+      setSuccess('');
+    }, 3000);
+  };
 
   const fetchNotificationStats = useCallback(async () => {
     try {
@@ -83,30 +101,53 @@ export default function AdminNotifications() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this notification?')) return;
+  const handleOpenDelete = (notification) => {
+    setSelectedNotification(notification);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedNotification) return;
     try {
-      const response = await adminAPI.deleteNotification(id);
+      setUpdateLoading(true);
+      const response = await adminAPI.deleteNotification(selectedNotification._id);
       if (response.success) {
-        setNotifications(prev => prev.filter(n => n._id !== id));
-        fetchNotificationStats();
+        setShowDeleteConfirm(false);
+        setNotifications(prev => prev.filter(n => n._id !== selectedNotification._id));
+        setSelectedNotification(null);
+        await fetchNotificationStats();
+        showMessage('Notification deleted successfully');
+      } else {
+        showMessage(response.message || 'Failed to delete notification', true);
       }
     } catch (err) {
-      setError(err?.message || 'Failed to delete notification');
+      showMessage(err?.message || 'Failed to delete notification', true);
+    } finally {
+      setUpdateLoading(false);
     }
   };
 
-  const handleDeleteAll = async () => {
-    if (!window.confirm('Delete all notifications? This cannot be undone.')) return;
+  const handleOpenDeleteAll = () => {
+    setShowDeleteAllConfirm(true);
+  };
+
+  const confirmDeleteAll = async () => {
     try {
+      setUpdateLoading(true);
       const response = await adminAPI.deleteAllNotifications();
       if (response.success) {
+        setShowDeleteAllConfirm(false);
         setNotifications([]);
         setTotalPages(0);
-        fetchNotificationStats();
+        await fetchNotificationStats();
+        showMessage('All notifications deleted successfully');
+      } else {
+        showMessage(response.message || 'Failed to delete notifications', true);
       }
     } catch (err) {
-      setError(err?.message || 'Failed to delete all notifications');
+      showMessage(err?.message || 'Failed to delete notifications', true);
+    } finally {
+      setUpdateLoading(false);
     }
   };
 
@@ -145,152 +186,147 @@ export default function AdminNotifications() {
     return date.toLocaleDateString();
   };
 
-  if (loading && notifications.length === 0) {
-    return (
-      <div className="flex h-screen">
-        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="flex-1 flex items-center justify-center bg-white dark:bg-slate-950">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-4"></div>
-            <p className="text-slate-600 dark:text-slate-400">Loading notifications...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen">
       <AdminSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-auto">
-          <div className="max-w-7xl mx-auto p-6">
-            <div className="hidden lg:block mb-8">
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Notifications</h1>
-              <p className="text-slate-600 dark:text-slate-400">Manage platform notifications and alerts</p>
+        <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4 sm:p-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">Notifications</h1>
+              <p className="text-slate-600">Manage platform notifications and alerts</p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-red-900 dark:text-red-200">{error}</p>
-                </div>
+              <div className="mb-6 p-4 bg-white border-2 border-red-300 rounded-2xl text-red-700 flex items-start gap-3">
+                <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+                <span>{error}</span>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+            {success && (
+              <div className="mb-6 p-4 bg-white border-2 border-green-300 rounded-2xl text-green-700 flex items-start gap-3">
+                <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
+                <span>{success}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Total Notifications</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalCount}</p>
+                    <p className="text-slate-600 text-sm font-medium">Total Notifications</p>
+                    <p className="text-3xl font-bold text-slate-900 mt-2">{stats.totalCount}</p>
                   </div>
-                  <Bell className="w-8 h-8 text-blue-500 opacity-20" />
+                  <Bell className="w-12 h-12 text-blue-100" />
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Unread</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.unreadCount}</p>
+                    <p className="text-slate-600 text-sm font-medium">Unread</p>
+                    <p className="text-3xl font-bold text-yellow-600 mt-2">{stats.unreadCount}</p>
                   </div>
-                  <AlertCircle className="w-8 h-8 text-yellow-500 opacity-20" />
+                  <AlertCircle className="w-12 h-12 text-yellow-100" />
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Read</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalCount - stats.unreadCount}</p>
+                    <p className="text-slate-600 text-sm font-medium">Read</p>
+                    <p className="text-3xl font-bold text-green-600 mt-2">{stats.totalCount - stats.unreadCount}</p>
                   </div>
-                  <CheckCircle className="w-8 h-8 text-green-500 opacity-20" />
+                  <CheckCircle className="w-12 h-12 text-green-100" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                  <div className="flex-1 flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Search notifications..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setPage(1);
-                        }}
-                        className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    <select
-                      value={typeFilter}
-                      onChange={(e) => {
-                        setTypeFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">All Types</option>
-                      <option value="user_created">User Created</option>
-                      <option value="data_purchase">Data Purchase</option>
-                      <option value="low_balance">Low Balance</option>
-                      <option value="system">System</option>
-                    </select>
-
-                    <select
-                      value={isReadFilter}
-                      onChange={(e) => {
-                        setIsReadFilter(e.target.value);
-                        setPage(1);
-                      }}
-                      className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">All Status</option>
-                      <option value="false">Unread</option>
-                      <option value="true">Read</option>
-                    </select>
-                  </div>
-
+            <div className="bg-white rounded-2xl border-2 border-slate-200 hover:border-slate-300 transition-all overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-slate-200">
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-slate-900">Notifications</h2>
                   <div className="flex gap-2">
                     {stats.unreadCount > 0 && (
                       <button
                         onClick={handleMarkAllAsRead}
-                        className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
+                        className="px-4 py-2 bg-blue-100 text-blue-900 border-2 border-blue-300 rounded-xl hover:bg-blue-200 transition-colors text-sm font-medium"
                       >
                         Mark All as Read
                       </button>
                     )}
                     <button
-                      onClick={handleDeleteAll}
+                      onClick={handleOpenDeleteAll}
                       disabled={notifications.length === 0}
-                      className="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-red-100 text-red-900 border-2 border-red-300 rounded-xl hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                     >
                       Delete All
                     </button>
                   </div>
                 </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search notifications..."
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-blue-400 text-sm hover:border-slate-300"
+                    />
+                  </div>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => {
+                      setTypeFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="px-4 py-3 border-2 border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:border-blue-400 text-sm"
+                  >
+                    <option value="">All Types</option>
+                    <option value="user_created">User Created</option>
+                    <option value="data_purchase">Data Purchase</option>
+                    <option value="low_balance">Low Balance</option>
+                    <option value="system">System</option>
+                  </select>
+                  <select
+                    value={isReadFilter}
+                    onChange={(e) => {
+                      setIsReadFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="px-4 py-3 border-2 border-slate-200 rounded-xl bg-white text-slate-900 focus:outline-none focus:border-blue-400 text-sm"
+                  >
+                    <option value="">All Status</option>
+                    <option value="false">Unread</option>
+                    <option value="true">Read</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="divide-y divide-slate-200 dark:divide-slate-800">
-                {notifications.length === 0 ? (
-                  <div className="p-12 text-center">
-                    <Bell className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                    <p className="text-slate-600 dark:text-slate-400 mb-2">No notifications found</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-500">Notifications will appear here when new events occur</p>
+              {loading && notifications.length === 0 ? (
+                <div className="flex justify-center py-16">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600">Loading notifications...</p>
                   </div>
-                ) : (
-                  notifications.map((notification) => (
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="text-center py-16">
+                  <Database size={48} className="mx-auto text-slate-300 mb-4" />
+                  <p className="text-slate-600 text-lg">No notifications found</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-200">
+                  {notifications.map((notification) => (
                     <div
                       key={notification._id}
-                      className={`p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${
-                        !notification.isRead ? 'bg-blue-50 dark:bg-blue-900/10' : ''
+                      className={`p-4 sm:p-6 hover:bg-blue-50 transition-colors ${
+                        !notification.isRead ? 'bg-blue-50' : ''
                       }`}
                     >
                       <div className="flex gap-4">
@@ -301,19 +337,19 @@ export default function AdminNotifications() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className={`font-semibold ${!notification.isRead ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <h3 className={`font-semibold ${!notification.isRead ? 'text-slate-900' : 'text-slate-700'}`}>
                                   {notification.title}
                                 </h3>
                                 <span className={`px-2 py-1 rounded text-xs font-medium ${typeColors[notification.type] || ''}`}>
                                   {getTypeLabel(notification.type)}
                                 </span>
                               </div>
-                              <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">{notification.message}</p>
+                              <p className="text-slate-600 text-sm mb-1">{notification.message}</p>
                               {notification.description && (
-                                <p className="text-slate-500 dark:text-slate-500 text-sm mb-2">{notification.description}</p>
+                                <p className="text-slate-500 text-sm mb-2">{notification.description}</p>
                               )}
-                              <p className="text-xs text-slate-500 dark:text-slate-500">
+                              <p className="text-xs text-slate-500">
                                 {formatDate(notification.createdAt)}
                               </p>
                             </div>
@@ -324,15 +360,15 @@ export default function AdminNotifications() {
                           {!notification.isRead && (
                             <button
                               onClick={() => handleMarkAsRead(notification._id)}
-                              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                              className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 transition-colors"
                               title="Mark as read"
                             >
-                              <CheckCircle size={18} />
+                              <CheckCircle size={18} className="text-green-600" />
                             </button>
                           )}
                           <button
-                            onClick={() => handleDelete(notification._id)}
-                            className="p-2 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            onClick={() => handleOpenDelete(notification)}
+                            className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 hover:text-red-600 transition-colors"
                             title="Delete notification"
                           >
                             <Trash2 size={18} />
@@ -340,23 +376,62 @@ export default function AdminNotifications() {
                         </div>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
 
-              {notifications.length > 0 && totalPages > 1 && (
-                <div className="p-6 border-t border-slate-200 dark:border-slate-800">
-                  <Pagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
-                  />
+              {totalPages > 1 && (
+                <div className="p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <p className="text-sm text-slate-600">
+                    Page {page} of {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      ← Previous
+                    </button>
+                    <button
+                      onClick={() => setPage(Math.min(totalPages, page + 1))}
+                      disabled={page === totalPages}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      Next →
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Notification"
+        message="Are you sure you want to delete this notification?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setSelectedNotification(null);
+        }}
+        isDangerous={true}
+      />
+
+      <ConfirmDialog
+        isOpen={showDeleteAllConfirm}
+        title="Delete All Notifications"
+        message="Are you sure you want to delete all notifications? This action cannot be undone."
+        confirmText="Delete All"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteAll}
+        onCancel={() => setShowDeleteAllConfirm(false)}
+        isDangerous={true}
+      />
     </div>
   );
 }
