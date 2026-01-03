@@ -169,10 +169,10 @@ export default function AdminNotifications() {
   };
 
   const typeColors = {
-    user_created: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-    data_purchase: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-    low_balance: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
-    system: 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300',
+    user_created: 'bg-blue-100 text-blue-700',
+    data_purchase: 'bg-green-100 text-green-700',
+    low_balance: 'bg-yellow-100 text-yellow-700',
+    system: 'bg-gray-100 text-gray-700',
   };
 
   const formatDate = (dateString) => {

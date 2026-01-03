@@ -176,7 +176,7 @@ export default function Transactions() {
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">Transaction History</h1>
               </div>
             </div>
-            <button className="w-full sm:w-auto px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition flex items-center justify-center gap-2 text-sm sm:text-base">
+            <button className="w-full sm:w-auto px-4 py-2 bg-slate-200 rounded-lg hover:bg-slate-300 transition flex items-center justify-center gap-2 text-sm sm:text-base">
               <Download size={16} />
               <span>Export</span>
             </button>
@@ -258,7 +258,7 @@ export default function Transactions() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-lg border-2 border-slate-200 bg-white hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-lg border-2 border-slate-200 bg-white text-slate-900 hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                 title="Filter by Status"
               >
                 <option value="all">All Status</option>
@@ -269,7 +269,7 @@ export default function Transactions() {
               <select
                 value={perPage}
                 onChange={(e) => setPerPage(Number(e.target.value))}
-                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-lg border-2 border-slate-200 bg-white hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-2.5 py-1.5 text-xs sm:text-sm rounded-lg border-2 border-slate-200 bg-white text-slate-900 hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                 title="Items per page"
               >
                 <option value={5}>5 items</option>
@@ -315,10 +315,10 @@ export default function Transactions() {
                     </div>
                     <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
                       tx.statusRaw === 'completed' 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        ? 'bg-green-100 text-green-700'
                         : tx.statusRaw === 'failed'
-                        ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                        : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-yellow-100 text-yellow-700'
                     }`}>
                       ✓ {tx.status}
                     </span>
@@ -347,20 +347,20 @@ export default function Transactions() {
                           setSelectedTx(tx);
                           setShowDetails(true);
                         }}
-                        className="p-1.5 sm:p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                        className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition"
                         title="View details"
                       >
                         <Eye size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </button>
                       <button
-                        className="p-1.5 sm:p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                        className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg transition"
                         title="Download receipt"
                       >
                         <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
                       </button>
                       <button
                         onClick={() => handleDeleteTransaction(tx)}
-                        className="p-1.5 sm:p-2 hover:bg-red-100 dark:hover:bg-red-900/20 rounded transition"
+                        className="p-1.5 sm:p-2 hover:bg-red-100 rounded-lg transition"
                         title="Delete transaction"
                       >
                         <Trash2 size={16} className="sm:w-[18px] sm:h-[18px] text-red-500" />
@@ -369,7 +369,7 @@ export default function Transactions() {
                         <button
                           onClick={() => handleRetryVerification(tx)}
                           disabled={retryingId === tx.id}
-                          className="p-1.5 sm:p-2 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded transition disabled:opacity-50"
+                          className="p-1.5 sm:p-2 hover:bg-blue-100 rounded-lg transition disabled:opacity-50"
                           title="Retry payment verification"
                         >
                           <RotateCcw 
@@ -388,63 +388,63 @@ export default function Transactions() {
           {/* Transaction Details Modal */}
           {showDetails && selectedTx && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4">
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white dark:bg-slate-800 p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                  <h2 className="text-lg sm:text-xl font-bold">Transaction Details</h2>
+              <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto border-2 border-slate-200">
+                <div className="sticky top-0 bg-white p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900">Transaction Details</h2>
                   <button
                     onClick={() => setShowDetails(false)}
-                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                    className="p-1 hover:bg-slate-100 rounded-lg transition"
                   >
                     <X size={20} />
                   </button>
                 </div>
 
                 <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Type</span>
-                    <span className="font-semibold text-sm text-right">{selectedTx.type}</span>
+                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Type</span>
+                    <span className="font-semibold text-sm text-right text-slate-900">{selectedTx.type}</span>
                   </div>
 
-                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Description</span>
-                    <span className="text-sm text-right break-words max-w-[60%]">{selectedTx.description}</span>
+                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Description</span>
+                    <span className="text-sm text-right break-words max-w-[60%] text-slate-700">{selectedTx.description}</span>
                   </div>
 
-                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Amount</span>
+                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Amount</span>
                     <span className="font-bold text-sm" style={{color: selectedTx.amount < 0 ? '#ef4444' : '#22c55e'}}>
                       {selectedTx.amount > 0 ? '+' : ''}{selectedTx.amount.toFixed(2)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Status</span>
+                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Status</span>
                     <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
                       selectedTx.statusRaw === 'completed' 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        ? 'bg-green-100 text-green-700'
                         : selectedTx.statusRaw === 'failed'
-                        ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                        : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-yellow-100 text-yellow-700'
                     }`}>
                       {selectedTx.status}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Date</span>
-                    <span className="text-sm">{selectedTx.date}</span>
+                  <div className="flex justify-between items-start gap-4 pb-3 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Date</span>
+                    <span className="text-sm text-slate-700">{selectedTx.date}</span>
                   </div>
 
                   <div className="flex justify-between items-start gap-4 pb-3">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">Balance After</span>
-                    <span className="font-bold text-sm text-blue-500">GHS {selectedTx.balanceAfter.toFixed(2)}</span>
+                    <span className="text-sm text-slate-600">Balance After</span>
+                    <span className="font-bold text-sm text-blue-600">GHS {selectedTx.balanceAfter.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="sticky bottom-0 bg-white dark:bg-slate-800 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700">
+                <div className="sticky bottom-0 bg-white p-4 sm:p-6 border-t border-slate-200">
                   <button
                     onClick={() => setShowDetails(false)}
-                    className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                    className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition text-sm font-medium"
                   >
                     Close
                   </button>

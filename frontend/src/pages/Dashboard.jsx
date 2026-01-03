@@ -342,10 +342,10 @@ export default function Dashboard() {
                           <td className="py-3 px-4">
                             <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap inline-block ${
                               tx.statusRaw === 'completed' 
-                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                ? 'bg-green-100 text-green-700'
                                 : tx.statusRaw === 'failed'
-                                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-yellow-100 text-yellow-700'
                             }`}>
                               ✓ {tx.status}
                             </span>
@@ -370,10 +370,10 @@ export default function Dashboard() {
                         <span className="truncate">{tx.date}</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 ${
                           tx.statusRaw === 'completed' 
-                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                            ? 'bg-green-100 text-green-700'
                             : tx.statusRaw === 'failed'
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                            : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-yellow-100 text-yellow-700'
                         }`}>
                           {tx.status}
                         </span>

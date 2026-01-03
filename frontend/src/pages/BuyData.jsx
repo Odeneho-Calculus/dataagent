@@ -137,8 +137,8 @@ export default function BuyData() {
       <UserLayout>
         <div className="flex items-center justify-center min-h-screen px-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-slate-400 dark:border-slate-600 mx-auto mb-4"></div>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">Loading data plans...</p>
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-slate-400 mx-auto mb-4"></div>
+            <p className="text-sm sm:text-base text-slate-600">Loading data plans...</p>
           </div>
         </div>
       </UserLayout>

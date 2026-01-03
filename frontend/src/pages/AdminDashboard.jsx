@@ -73,8 +73,8 @@ export default function AdminDashboard() {
     },
   ];
 
-  // Use a neutral, theme-aware gradient for all stat cards to keep a unified look
-  const neutralGradient = 'from-slate-50 to-white dark:from-slate-900 dark:to-slate-800';
+  // Use a neutral gradient for all stat cards to keep a unified look
+  const neutralGradient = 'from-slate-50 to-white';
 
   return (
     <div className="flex h-screen">

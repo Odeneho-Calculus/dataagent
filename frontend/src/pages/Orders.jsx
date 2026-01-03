@@ -67,15 +67,15 @@ export default function Orders() {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'completed':
-        return 'text-green-600 dark:text-green-400';
+        return 'text-green-600';
       case 'processing':
-        return 'text-blue-600 dark:text-blue-400';
+        return 'text-blue-600';
       case 'pending':
-        return 'text-yellow-600 dark:text-yellow-400';
+        return 'text-yellow-600';
       case 'failed':
-        return 'text-red-600 dark:text-red-400';
+        return 'text-red-600';
       default:
-        return 'text-slate-600 dark:text-slate-400';
+        return 'text-slate-600';
     }
   };
 
@@ -94,7 +94,7 @@ export default function Orders() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition disabled:opacity-50 flex-shrink-0"
+              className="p-2 rounded-lg hover:bg-slate-100 transition disabled:opacity-50 flex-shrink-0"
               title="Refresh orders"
             >
               <RotateCw size={18} className={`sm:w-5 sm:h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -197,7 +197,7 @@ export default function Orders() {
                           <td className="py-3 px-3">
                             <button
                               onClick={() => handleViewDetails(order)}
-                              className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                              className="p-1.5 hover:bg-slate-100 rounded-lg transition"
                               title="View details"
                             >
                               <Eye size={16} />
@@ -249,7 +249,7 @@ export default function Orders() {
                           <td className="py-2.5 px-2">
                             <button
                               onClick={() => handleViewDetails(order)}
-                              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition"
+                              className="p-1 hover:bg-slate-100 rounded-lg transition"
                               title="View details"
                             >
                               <Eye size={14} />
@@ -279,7 +279,7 @@ export default function Orders() {
                         </div>
                         <button
                           onClick={() => handleViewDetails(order)}
-                          className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition flex-shrink-0"
+                          className="p-1.5 hover:bg-slate-100 rounded-lg transition flex-shrink-0"
                           title="View details"
                         >
                           <Eye size={16} />

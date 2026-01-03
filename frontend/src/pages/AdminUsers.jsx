@@ -180,10 +180,10 @@ export default function AdminUsers() {
   };
 
   const getStatusColor = (user) => {
-    if (user.status === 'banned') return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
-    if (user.status === 'suspended') return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
-    if (user.deletedAt) return 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-300';
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300';
+    if (user.status === 'banned') return 'bg-red-100 text-red-700';
+    if (user.status === 'suspended') return 'bg-yellow-100 text-yellow-700';
+    if (user.deletedAt) return 'bg-gray-100 text-gray-700';
+    return 'bg-green-100 text-green-700';
   };
 
   const getStatusText = (user) => {
@@ -386,7 +386,7 @@ export default function AdminUsers() {
                             {user.deletedAt ? (
                               <button
                                 onClick={() => handleRestoreUser(user._id)}
-                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                className="p-2 hover:bg-slate-100 rounded-lg transition"
                                 title="Restore User"
                               >
                                 <RotateCcw className="w-4 h-4 text-green-600" />
@@ -398,7 +398,7 @@ export default function AdminUsers() {
                                     setSelectedUser(user);
                                     setShowViewModal(true);
                                   }}
-                                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                  className="p-2 hover:bg-slate-100 rounded-lg transition"
                                   title="View Info"
                                 >
                                   <Eye className="w-4 h-4 text-cyan-600" />
@@ -409,7 +409,7 @@ export default function AdminUsers() {
                                     setNewRole(user.role);
                                     setShowRoleModal(true);
                                   }}
-                                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                  className="p-2 hover:bg-slate-100 rounded-lg transition"
                                   title="Change Role"
                                 >
                                   <Edit2 className="w-4 h-4 text-blue-600" />
@@ -417,7 +417,7 @@ export default function AdminUsers() {
                                 {user.status === 'banned' ? (
                                   <button
                                     onClick={() => handleUnbanUser(user._id)}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                    className="p-2 hover:bg-slate-100 rounded-lg transition"
                                     title="Unban User"
                                   >
                                     <Ban className="w-4 h-4 text-yellow-600" />
@@ -428,7 +428,7 @@ export default function AdminUsers() {
                                       setSelectedUser(user);
                                       setShowBanModal(true);
                                     }}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                    className="p-2 hover:bg-slate-100 rounded-lg transition"
                                     title="Ban User"
                                   >
                                     <Ban className="w-4 h-4 text-red-600" />
@@ -437,7 +437,7 @@ export default function AdminUsers() {
                                 {user.status === 'suspended' ? (
                                   <button
                                     onClick={() => handleUnsuspendUser(user._id)}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                    className="p-2 hover:bg-slate-100 rounded-lg transition"
                                     title="Unsuspend User"
                                   >
                                     <Clock className="w-4 h-4 text-orange-600" />
@@ -449,7 +449,7 @@ export default function AdminUsers() {
                                       setSuspendDays(7);
                                       setShowSuspendModal(true);
                                     }}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                    className="p-2 hover:bg-slate-100 rounded-lg transition"
                                     title="Suspend User"
                                   >
                                     <Clock className="w-4 h-4 text-orange-500" />
@@ -460,7 +460,7 @@ export default function AdminUsers() {
                                     setSelectedUser(user);
                                     setShowDeleteModal(true);
                                   }}
-                                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition"
+                                  className="p-2 hover:bg-slate-100 rounded-lg transition"
                                   title="Delete User"
                                 >
                                   <Trash2 className="w-4 h-4 text-red-600" />
@@ -506,31 +506,31 @@ export default function AdminUsers() {
 
       {showViewModal && selectedUser && (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full max-h-96 overflow-y-auto">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-96 overflow-y-auto">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Info className="w-5 h-5" />
               User Information
             </h2>
             <div className="space-y-3">
-              <div><span className="font-medium text-slate-900 dark:text-white">Name:</span> {selectedUser.name}</div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Email:</span> {selectedUser.email}</div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Balance:</span> GHS {selectedUser.balance?.toFixed(2) || '0.00'}</div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Role:</span> {selectedUser.role}</div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Status:</span> <span className={`px-2 py-1 rounded text-xs ${getStatusColor(selectedUser)}`}>{getStatusText(selectedUser)}</span></div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Active:</span> {selectedUser.isActive ? 'Yes' : 'No'}</div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Referral Code:</span> {selectedUser.referralCode}</div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Referral Earnings:</span> GHS {selectedUser.referralEarnings?.toFixed(2) || '0.00'}</div>
-              <div><span className="font-medium text-slate-900 dark:text-white">Joined:</span> {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
+              <div><span className="font-medium text-slate-900">Name:</span> {selectedUser.name}</div>
+              <div><span className="font-medium text-slate-900">Email:</span> {selectedUser.email}</div>
+              <div><span className="font-medium text-slate-900">Balance:</span> GHS {selectedUser.balance?.toFixed(2) || '0.00'}</div>
+              <div><span className="font-medium text-slate-900">Role:</span> {selectedUser.role}</div>
+              <div><span className="font-medium text-slate-900">Status:</span> <span className={`px-2 py-1 rounded text-xs ${getStatusColor(selectedUser)}`}>{getStatusText(selectedUser)}</span></div>
+              <div><span className="font-medium text-slate-900">Active:</span> {selectedUser.isActive ? 'Yes' : 'No'}</div>
+              <div><span className="font-medium text-slate-900">Referral Code:</span> {selectedUser.referralCode}</div>
+              <div><span className="font-medium text-slate-900">Referral Earnings:</span> GHS {selectedUser.referralEarnings?.toFixed(2) || '0.00'}</div>
+              <div><span className="font-medium text-slate-900">Joined:</span> {new Date(selectedUser.createdAt).toLocaleDateString()}</div>
               {selectedUser.status === 'banned' && selectedUser.banReason && (
-                <div><span className="font-medium text-slate-900 dark:text-white">Ban Reason:</span> {selectedUser.banReason}</div>
+                <div><span className="font-medium text-slate-900">Ban Reason:</span> {selectedUser.banReason}</div>
               )}
               {selectedUser.status === 'suspended' && selectedUser.suspendedUntil && (
-                <div><span className="font-medium text-slate-900 dark:text-white">Suspended Until:</span> {new Date(selectedUser.suspendedUntil).toLocaleDateString()}</div>
+                <div><span className="font-medium text-slate-900">Suspended Until:</span> {new Date(selectedUser.suspendedUntil).toLocaleDateString()}</div>
               )}
             </div>
             <button
               onClick={() => setShowViewModal(false)}
-              className="mt-6 w-full px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg"
+              className="mt-6 w-full px-4 py-2 bg-slate-200 text-slate-900 rounded-lg"
             >
               Close
             </button>
@@ -540,19 +540,19 @@ export default function AdminUsers() {
 
       {showRoleModal && selectedUser && (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Change User Role</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Change User Role</h2>
+            <p className="text-sm text-slate-600 mb-4">
               User: {selectedUser.name} ({selectedUser.email})
             </p>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 New Role
               </label>
               <select
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
               >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
@@ -561,7 +561,7 @@ export default function AdminUsers() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowRoleModal(false)}
-                className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg"
+                className="flex-1 px-4 py-2 bg-slate-200 text-slate-900 rounded-lg"
               >
                 Cancel
               </button>
@@ -578,27 +578,27 @@ export default function AdminUsers() {
 
       {showBanModal && selectedUser && (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 text-red-600">Ban User</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 text-red-600">Ban User</h2>
+            <p className="text-sm text-slate-600 mb-4">
               User: {selectedUser.name} ({selectedUser.email})
             </p>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Reason (Optional)
               </label>
               <textarea
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
                 placeholder="Why is this user being banned?"
-                className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 text-sm"
                 rows="3"
               />
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowBanModal(false)}
-                className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg"
+                className="flex-1 px-4 py-2 bg-slate-200 text-slate-900 rounded-lg"
               >
                 Cancel
               </button>
@@ -615,13 +615,13 @@ export default function AdminUsers() {
 
       {showSuspendModal && selectedUser && (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 text-orange-600">Suspend User</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 text-orange-600">Suspend User</h2>
+            <p className="text-sm text-slate-600 mb-4">
               User: {selectedUser.name} ({selectedUser.email})
             </p>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Suspension Duration (Days)
               </label>
               <input
@@ -630,13 +630,13 @@ export default function AdminUsers() {
                 max="365"
                 value={suspendDays}
                 onChange={(e) => setSuspendDays(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900"
               />
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSuspendModal(false)}
-                className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg"
+                className="flex-1 px-4 py-2 bg-slate-200 text-slate-900 rounded-lg"
               >
                 Cancel
               </button>
@@ -653,15 +653,15 @@ export default function AdminUsers() {
 
       {showDeleteModal && selectedUser && (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-sm w-full">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 text-red-700">Delete User</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 text-red-700">Delete User</h2>
+            <p className="text-sm text-slate-600 mb-4">
               Are you sure you want to delete {selectedUser.name}? This action can be reversed by restoring the user.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg"
+                className="flex-1 px-4 py-2 bg-slate-200 text-slate-900 rounded-lg"
               >
                 Cancel
               </button>
