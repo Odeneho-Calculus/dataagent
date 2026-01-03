@@ -152,8 +152,16 @@ export default function BuyData() {
     <UserLayout>
       <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-          {/* Page Header */}
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 lg:mb-8">Buy Data Bundles</h1>
+          {/* Page Header with Balance */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Buy Data Bundles</h1>
+            <div className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-3 sm:p-4 shadow-lg">
+              <p className="text-xs sm:text-sm text-blue-100 mb-1">Current Balance</p>
+              <p className="text-2xl sm:text-3xl font-bold text-white">
+                GHS {user?.balance?.toFixed(2) || '0.00'}
+              </p>
+            </div>
+          </div>
 
           {/* Success Message */}
           {successMessage && (
@@ -276,13 +284,6 @@ export default function BuyData() {
                 )}
               </div>
 
-              {/* Current Balance Card */}
-              <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 border-2 border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
-                <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 text-slate-900">Current Balance</h3>
-                <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
-                  GHS {user?.balance?.toFixed(2) || '0.00'}
-                </p>
-              </div>
             </>
           )}
 
