@@ -45,11 +45,29 @@ export default function Home() {
 
   const fetchActivePlans = async () => {
     try {
-      const response = await publicAPI.getActivePlans(10, 0);
+      const response = await publicAPI.getActivePlans(50, 0);
       if (response.success && response.plans) {
-        setPlans(response.plans.slice(0, 6));
+        const grouped = {};
+        response.plans.forEach(plan => {
+          if (!grouped[plan.network]) {
+            grouped[plan.network] = [];
+          }
+          grouped[plan.network].push(plan);
+        });
         
-        const uniqueNetworks = [...new Set(response.plans.map(p => p.network))];
+        const mixed = [];
+        let maxLength = Math.max(...Object.values(grouped).map(arr => arr.length));
+        for (let i = 0; i < maxLength && mixed.length < 6; i++) {
+          for (const network in grouped) {
+            if (grouped[network][i] && mixed.length < 6) {
+              mixed.push(grouped[network][i]);
+            }
+          }
+        }
+        
+        setPlans(mixed);
+        
+        const uniqueNetworks = Object.keys(grouped);
         const networkMap = {
           'MTN': { name: 'MTN', icon: 'mtn', color: 'from-yellow-500 to-yellow-600' },
           'TELECEL': { name: 'Telecel', icon: 'phone', color: 'from-red-500 to-red-600' },
@@ -220,33 +238,33 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
             {plans.map((plan) => (
               <Link 
                 key={plan._id} 
                 to={user ? `/buy-data?planId=${plan._id}&planName=${encodeURIComponent(plan.planName)}&dataSize=${encodeURIComponent(plan.dataSize)}&price=${plan.sellingPrice}&network=${plan.network}` : '/login'} 
-                className="group relative bg-white rounded-2xl p-6 border-2 border-slate-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 cursor-pointer"
+                className="group relative bg-white rounded-xl p-3 sm:p-4 border-2 border-slate-200 hover:border-blue-400 hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
-                <div className="absolute top-4 right-4">
-                  <span className={`px-3 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r ${getNetworkColor(plan.network)}`}>
-                    {plan.network}
-                  </span>
-                </div>
-
-                <div className="mb-6">
-                  <p className="text-3xl font-bold text-slate-900 mb-1">{plan.dataSize}</p>
-                  <p className="text-sm text-slate-500">{plan.validity}</p>
-                </div>
-
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">Price</p>
-                    <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      GHS {plan.sellingPrice.toFixed(2)}
-                    </p>
+                <div className="mb-2 sm:mb-3">
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <div>
+                      <p className="text-base sm:text-lg font-bold truncate text-slate-900">{plan.dataSize}</p>
+                      <p className="text-xs sm:text-sm truncate text-slate-600">
+                        {plan.validity}
+                      </p>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r ${getNetworkColor(plan.network)} text-white font-bold`}>
+                      {plan.network}
+                    </span>
                   </div>
-                  <button className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold text-sm hover:shadow-lg transition-shadow">
-                    {user ? 'Get Now' : 'View'}
+                </div>
+
+                <div className="flex justify-between items-end gap-2">
+                  <p className="text-sm sm:text-base font-bold text-blue-600 whitespace-nowrap">
+                    GHS {plan.sellingPrice.toFixed(2)}
+                  </p>
+                  <button className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white transition-shadow">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
                   </button>
                 </div>
               </Link>
@@ -267,10 +285,12 @@ export default function Home() {
             const Icon = feat.icon;
             return (
               <div key={feat.title} className="group bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
-                <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feat.gradient} shadow-lg mb-4`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feat.gradient} shadow-lg flex-shrink-0`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-bold text-lg text-slate-900">{feat.title}</h3>
                 </div>
-                <h3 className="font-bold text-lg text-slate-900 mb-2">{feat.title}</h3>
                 <p className="text-sm text-slate-600">{feat.desc}</p>
               </div>
             );
@@ -280,23 +300,23 @@ export default function Home() {
 
       {/* Trust/Social Proof Section */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-10 shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
             <div>
-              <p className="text-5xl font-bold text-white mb-2">
+              <p className="text-3xl sm:text-5xl font-bold text-white mb-2">
                 {stats.totalUsers >= 1000 ? `${(stats.totalUsers / 1000).toFixed(0)}K+` : stats.totalUsers.toLocaleString()}
               </p>
-              <p className="text-blue-100">Happy Customers</p>
+              <p className="text-xs sm:text-base text-blue-100">Happy Customers</p>
             </div>
             <div>
-              <p className="text-5xl font-bold text-white mb-2">
+              <p className="text-3xl sm:text-5xl font-bold text-white mb-2">
                 {stats.totalOrdersCompleted >= 1000000 ? `${(stats.totalOrdersCompleted / 1000000).toFixed(1)}M+` : stats.totalOrdersCompleted.toLocaleString()}
               </p>
-              <p className="text-blue-100">Data Bundles Sold</p>
+              <p className="text-xs sm:text-base text-blue-100">Data Bundles Sold</p>
             </div>
             <div>
-              <p className="text-5xl font-bold text-white mb-2">{stats.successRate}%</p>
-              <p className="text-blue-100">Success Rate</p>
+              <p className="text-3xl sm:text-5xl font-bold text-white mb-2">{stats.successRate}%</p>
+              <p className="text-xs sm:text-base text-blue-100">Success Rate</p>
             </div>
           </div>
         </div>
