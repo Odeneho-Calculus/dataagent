@@ -5,12 +5,14 @@ const {
   syncDataPlans,
   getDataPlans,
   getDataPlanById,
+  getDataPlanStats,
   updateDataPlanPrices,
   clearDataPlanEdits,
   toggleDataPlanStatus,
   deleteDataPlan,
 } = require('../controllers/dataPlanController');
 
+router.get('/stats', getDataPlanStats);
 router.get('/list', getDataPlans);
 router.get('/:id', getDataPlanById);
 

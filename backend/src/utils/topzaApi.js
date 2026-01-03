@@ -366,4 +366,48 @@ exports.getWalletTransactions = async (page = 1, limit = 20, filters = {}) => {
   }
 };
 
+exports.getBusinessStatus = async () => {
+  try {
+    console.log('[Topza API] Fetching business status');
+    
+    const response = await topzaApi.get('/v1/business/status');
+    
+    console.log('[Topza API] Business status response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      isOpen: response.data?.data?.isOpen,
+    });
+    
+    if (response.data && response.data.success && response.data.data) {
+      console.log('[Topza API] Business status retrieved successfully');
+      return {
+        success: true,
+        data: response.data.data,
+      };
+    }
+    
+    const errorMsg = response.data?.message || 'Failed to fetch business status';
+    console.error('[Topza API] Business status failed:', {
+      message: errorMsg,
+      code: response.data?.code,
+    });
+    
+    return {
+      success: false,
+      message: errorMsg,
+    };
+  } catch (error) {
+    console.error('[Topza API] Error fetching business status:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Failed to fetch business status',
+    };
+  }
+};
+
 module.exports = exports;

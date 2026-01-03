@@ -18,6 +18,7 @@ export default function AdminDataPlans() {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [stats, setStats] = useState({ totalPlans: 0, activePlans: 0, outOfStockPlans: 0, avgMargin: 0 });
 
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -32,6 +33,7 @@ export default function AdminDataPlans() {
 
   useEffect(() => {
     fetchDataPlans();
+    fetchStats();
   }, [page, selectedNetwork]);
 
   const fetchDataPlans = async () => {
@@ -46,6 +48,17 @@ export default function AdminDataPlans() {
       setError(err.message || 'Failed to fetch data plans');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await dataplans.getStats(selectedNetwork || 'all');
+      if (response.success) {
+        setStats(response.stats);
+      }
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
     }
   };
 
@@ -75,6 +88,7 @@ export default function AdminDataPlans() {
       if (response.success) {
         setPage(1);
         await fetchDataPlans();
+        await fetchStats();
         showMessage(`Sync complete: ${response.stats.synced} new, ${response.stats.updated} updated`);
       }
     } catch (err) {
@@ -160,14 +174,6 @@ export default function AdminDataPlans() {
   };
 
   const filteredPlans = getFilteredPlans();
-  const activePlans = filteredPlans.filter(p => p.status === 'active').length;
-  const inactivePlans = filteredPlans.filter(p => p.status !== 'active').length;
-  const outOfStockPlans = filteredPlans.filter(p => !p.inStock).length;
-  const totalMargin = filteredPlans.reduce((sum, p) => {
-    const margin = ((p.sellingPrice - p.costPrice) / p.costPrice) * 100;
-    return sum + margin;
-  }, 0);
-  const avgMargin = filteredPlans.length > 0 ? (totalMargin / filteredPlans.length).toFixed(2) : 0;
 
   return (
     <div className="flex h-screen">
@@ -208,7 +214,7 @@ export default function AdminDataPlans() {
                   </div>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 mb-1">Total Plans</p>
-                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{filteredPlans.length}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stats.totalPlans}</p>
               </div>
 
               <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
@@ -218,7 +224,7 @@ export default function AdminDataPlans() {
                   </div>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 mb-1">Active Plans</p>
-                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{activePlans}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stats.activePlans}</p>
               </div>
 
               <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
@@ -228,7 +234,7 @@ export default function AdminDataPlans() {
                   </div>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 mb-1">Out of Stock</p>
-                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{outOfStockPlans}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stats.outOfStockPlans}</p>
               </div>
 
               <div className="bg-white rounded-2xl p-4 sm:p-6 border-2 border-slate-200 hover:shadow-lg transition-all">
@@ -238,7 +244,7 @@ export default function AdminDataPlans() {
                   </div>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 mb-1">Avg Margin</p>
-                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{avgMargin}%</p>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">{stats.avgMargin}%</p>
               </div>
             </div>
 

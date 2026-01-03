@@ -67,6 +67,7 @@ export const user = {
 export const publicAPI = {
   getReferralSettings: () => api.get('/public/referral-settings'),
   getActivePlans: (limit = 10, offset = 0) => api.get(`/public/dataplans?limit=${limit}&offset=${offset}`),
+  getBusinessStatus: () => api.get('/public/business-status'),
 };
 
 export const admin = {
@@ -125,6 +126,8 @@ export const dataplans = {
   list: (network = '', status = 'active', page = 1, limit = 10) =>
     api.get(`/dataplans/list?network=${network}&status=${status}&page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/dataplans/${id}`),
+  getStats: (network = 'all') =>
+    api.get(`/dataplans/stats?network=${network}`),
   sync: () => api.post('/dataplans/sync'),
   updatePrices: (id, costPrice, sellingPrice) =>
     api.patch(`/dataplans/${id}/prices`, { costPrice, sellingPrice }),

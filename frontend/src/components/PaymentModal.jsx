@@ -10,53 +10,72 @@ export default function PaymentModal({ isOpen, onClose, accessCode, reference, a
   useEffect(() => {
     if (!isOpen || !accessCode) return;
 
+    let isMounted = true;
+
     const initializePayment = async () => {
       try {
-        if (window.PaystackPop) {
-          paystackRef.current = new window.PaystackPop();
-          
-          paystackRef.current.resumeTransaction(accessCode, {
-            onSuccess: async () => {
-              setStatus('verifying');
-              try {
-                const result = await wallet.verifyPayment({ reference });
-                
+        if (!window.PaystackPop) {
+          if (isMounted) {
+            setStatus('failed');
+            setError('Paystack library not loaded. Please refresh the page.');
+          }
+          return;
+        }
+
+        paystackRef.current = new window.PaystackPop();
+        
+        paystackRef.current.resumeTransaction(accessCode, {
+          onSuccess: async () => {
+            if (!isMounted) return;
+            setStatus('verifying');
+            try {
+              const result = await wallet.verifyPayment({ reference });
+              
+              if (isMounted) {
                 if (result.success && result.transaction.status === 'completed') {
                   setStatus('success');
                   setTimeout(() => {
-                    onSuccess(result);
-                    onClose();
+                    if (isMounted) {
+                      onSuccess(result);
+                      onClose();
+                    }
                   }, 2000);
                 } else {
                   setStatus('failed');
                   setError('Payment verification failed');
                 }
-              } catch (err) {
+              }
+            } catch (err) {
+              if (isMounted) {
                 setStatus('failed');
                 setError(err.message || 'Payment verification failed');
               }
-            },
-            onCancel: () => {
+            }
+          },
+          onCancel: () => {
+            if (isMounted) {
               setStatus('cancelled');
-            },
-            onError: (error) => {
+            }
+          },
+          onError: (error) => {
+            if (isMounted) {
               setStatus('failed');
               setError(error?.message || 'Payment error occurred');
-            },
-          });
-        } else {
-          setStatus('failed');
-          setError('Paystack library not loaded. Please refresh the page.');
-        }
+            }
+          },
+        });
       } catch (err) {
-        setStatus('failed');
-        setError(err.message || 'Failed to initialize payment');
+        if (isMounted) {
+          setStatus('failed');
+          setError(err.message || 'Failed to initialize payment');
+        }
       }
     };
 
     initializePayment();
 
     return () => {
+      isMounted = false;
       if (paystackRef.current?.cancelTransaction) {
         paystackRef.current.cancelTransaction(reference);
       }

@@ -166,7 +166,7 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
     const transaction = await Transaction.create({
       userId: req.userId,
       type: 'data_purchase',
-      amount: 0,
+      amount: -plan.sellingPrice,
       reference: topzaData.transaction?.reference || 'TXN' + Date.now(),
       paystackReference: null,
       status: 'completed',
@@ -296,7 +296,7 @@ const handlePaystackPayment = async (req, res, user, plan, order) => {
     const transaction = await Transaction.create({
       userId: req.userId,
       type: 'data_purchase',
-      amount: 0,
+      amount: -plan.sellingPrice,
       reference,
       status: 'pending',
       description: `Data purchase: ${plan.dataSize} ${plan.network} to ${order.phoneNumber}`,
@@ -446,32 +446,6 @@ exports.verifyDataPurchase = async (req, res) => {
           orderNumber: order.orderNumber,
           status: order.status,
         },
-      });
-    }
-
-    const topzaBalanceCheck = await getWalletBalance();
-    console.log('[Verify Data Purchase] Topza balance check:', {
-      success: topzaBalanceCheck.success,
-      balance: topzaBalanceCheck.balance,
-      required: order.amount,
-      error: topzaBalanceCheck.error,
-    });
-    
-    if (!topzaBalanceCheck.success || topzaBalanceCheck.balance < order.amount) {
-      order.status = 'failed';
-      order.errorMessage = 'Data purchase currently unavailable';
-      await order.save();
-
-      console.error('[Verify Data Purchase] Failed:', {
-        topzaSuccess: topzaBalanceCheck.success,
-        balance: topzaBalanceCheck.balance,
-        required: order.amount,
-        error: topzaBalanceCheck.error,
-      });
-
-      return res.status(503).json({
-        success: false,
-        message: 'Data purchase currently unavailable',
       });
     }
 

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { CreditCard, Loader } from 'lucide-react';
+import { CreditCard, Loader, Clock } from 'lucide-react';
 import PaymentModal from '../components/PaymentModal';
-import { wallet } from '../services/api';
+import { wallet, publicAPI } from '../services/api';
 import UserLayout from '../components/UserLayout';
 
 export default function TopUp() {
@@ -13,12 +13,33 @@ export default function TopUp() {
   const [paymentData, setPaymentData] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [businessStatus, setBusinessStatus] = useState(null);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const response = await publicAPI.getBusinessStatus();
+        if (response.success && response.data) {
+          setBusinessStatus(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to check business status:', err);
+      }
+    };
+
+    checkStatus();
+  }, []);
 
   const quickAmounts = [10, 20, 50, 100, 200, 500];
 
   const handleTopUp = async () => {
     if (!amount || amount <= 0) {
       setError('Please enter a valid amount');
+      return;
+    }
+
+    if (businessStatus && !businessStatus.isOpen) {
+      setError(businessStatus.message || 'Business is currently closed. Please try again during business hours.');
       return;
     }
 
@@ -54,6 +75,16 @@ export default function TopUp() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 text-slate-900">Top Up Wallet</h1>
 
+        {businessStatus && !businessStatus.isOpen && (
+          <div className="mb-4 p-4 rounded-2xl flex items-start gap-3 border-2 border-orange-300 bg-white text-orange-700">
+            <Clock size={20} className="flex-shrink-0" />
+            <div>
+              <p className="font-bold text-sm">Business Closed</p>
+              <p className="text-sm">{businessStatus.message}</p>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="mb-4 p-4 rounded-2xl flex items-start gap-3 border-2 border-red-300 bg-white text-red-700">
             <span className="text-xl">⚠️</span>
@@ -88,7 +119,7 @@ export default function TopUp() {
                   <button
                     key={amt}
                     onClick={() => setAmount(amt.toString())}
-                    disabled={loading}
+                    disabled={loading || (businessStatus && !businessStatus.isOpen)}
                     className={`py-2 sm:py-3 px-2 sm:px-3 rounded-lg transition text-xs sm:text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed ${
                       amount === amt.toString()
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
@@ -132,8 +163,9 @@ export default function TopUp() {
 
               <button
                 onClick={handleTopUp}
-                disabled={loading || !amount}
+                disabled={loading || !amount || (businessStatus && !businessStatus.isOpen)}
                 className="w-full text-sm sm:text-base font-bold py-2.5 sm:py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
+                title={businessStatus && !businessStatus.isOpen ? 'Business is currently closed' : ''}
               >
                 {loading ? (
                   <>
@@ -158,13 +190,14 @@ export default function TopUp() {
 
       {paymentData && (
         <PaymentModal
+          key={paymentData?.reference}
           isOpen={showPaymentModal}
           onClose={() => {
             setShowPaymentModal(false);
             setPaymentData(null);
           }}
-          accessCode={paymentData.accessCode}
-          reference={paymentData.reference}
+          accessCode={paymentData?.accessCode}
+          reference={paymentData?.reference}
           amount={parseFloat(amount)}
           onSuccess={handlePaymentSuccess}
         />

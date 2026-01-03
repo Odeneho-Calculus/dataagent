@@ -104,11 +104,11 @@ exports.syncDataPlans = async (req, res) => {
 
 exports.getDataPlans = async (req, res) => {
   try {
-    const { network, status, page = 1, limit = 10 } = req.query;
+    const { network, status, page = 1, limit = 100 } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const query = {};
 
-    if (network) {
+    if (network && network !== 'all') {
       query.network = network;
     }
     if (status) {
@@ -303,6 +303,46 @@ exports.deleteDataPlan = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Data plan deleted successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.getDataPlanStats = async (req, res) => {
+  try {
+    const { network } = req.query;
+    const query = {};
+
+    if (network && network !== 'all') {
+      query.network = network;
+    }
+
+    const totalPlans = await DataPlan.countDocuments(query);
+    const activePlans = await DataPlan.countDocuments({ ...query, status: 'active' });
+    const outOfStockPlans = await DataPlan.countDocuments({ ...query, inStock: false });
+
+    const plans = await DataPlan.find(query);
+    let totalMargin = 0;
+    plans.forEach(plan => {
+      const margin = plan.costPrice > 0 
+        ? ((plan.sellingPrice - plan.costPrice) / plan.costPrice) * 100 
+        : 0;
+      totalMargin += margin;
+    });
+    const avgMargin = plans.length > 0 ? (totalMargin / plans.length).toFixed(2) : 0;
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalPlans,
+        activePlans,
+        outOfStockPlans,
+        avgMargin: parseFloat(avgMargin),
+      },
     });
   } catch (error) {
     res.status(500).json({
