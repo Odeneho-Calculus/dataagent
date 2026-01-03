@@ -24,6 +24,11 @@ export default function Home() {
   const [networks, setNetworks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [referralSettings, setReferralSettings] = useState(null);
+  const [stats, setStats] = useState({
+    totalUsers: 50000,
+    totalOrdersCompleted: 2000000,
+    successRate: 99.9,
+  });
 
   useMetaTags({
     title: 'Buy Data Bundles Online',
@@ -35,6 +40,7 @@ export default function Home() {
   useEffect(() => {
     fetchActivePlans();
     fetchReferralSettings();
+    fetchPublicStats();
   }, []);
 
   const fetchActivePlans = async () => {
@@ -67,6 +73,22 @@ export default function Home() {
       }
     } catch (err) {
       console.error('Failed to fetch referral settings:', err);
+    }
+  };
+
+  const fetchPublicStats = async () => {
+    try {
+      console.log('Fetching public stats...');
+      const response = await publicAPI.getPublicStats();
+      console.log('Public stats response:', response);
+      if (response.success && response.stats) {
+        console.log('Setting stats:', response.stats);
+        setStats(response.stats);
+      } else {
+        console.log('Response not successful or no stats:', response);
+      }
+    } catch (err) {
+      console.error('Failed to fetch public stats:', err);
     }
   };
 
@@ -111,7 +133,7 @@ export default function Home() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 mb-6">
               <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-              <span className="text-sm font-medium text-slate-700">Trusted by 50,000+ customers</span>
+              <span className="text-sm font-medium text-slate-700">Trusted by {stats.totalUsers.toLocaleString()}+ customers</span>
             </div>
             
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -261,15 +283,19 @@ export default function Home() {
         <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-10 shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <p className="text-5xl font-bold text-white mb-2">50K+</p>
+              <p className="text-5xl font-bold text-white mb-2">
+                {stats.totalUsers >= 1000 ? `${(stats.totalUsers / 1000).toFixed(0)}K+` : stats.totalUsers.toLocaleString()}
+              </p>
               <p className="text-blue-100">Happy Customers</p>
             </div>
             <div>
-              <p className="text-5xl font-bold text-white mb-2">2M+</p>
+              <p className="text-5xl font-bold text-white mb-2">
+                {stats.totalOrdersCompleted >= 1000000 ? `${(stats.totalOrdersCompleted / 1000000).toFixed(1)}M+` : stats.totalOrdersCompleted.toLocaleString()}
+              </p>
               <p className="text-blue-100">Data Bundles Sold</p>
             </div>
             <div>
-              <p className="text-5xl font-bold text-white mb-2">99.9%</p>
+              <p className="text-5xl font-bold text-white mb-2">{stats.successRate}%</p>
               <p className="text-blue-100">Success Rate</p>
             </div>
           </div>

@@ -1125,3 +1125,28 @@ exports.getTopzaWalletTransactions = async (req, res) => {
     });
   }
 };
+
+exports.getPublicStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments({ $or: [{ role: 'user' }, { role: { $exists: false } }] });
+    const totalOrders = await Order.countDocuments();
+    const completedOrders = await Order.countDocuments({ status: 'completed' });
+    
+    const successRate = totalOrders > 0 ? ((completedOrders / totalOrders) * 100).toFixed(1) : 0;
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalUsers,
+        totalOrdersCompleted: completedOrders,
+        successRate: parseFloat(successRate),
+      },
+    });
+  } catch (error) {
+    console.error('getPublicStats error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

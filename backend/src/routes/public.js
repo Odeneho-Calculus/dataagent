@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getReferralSettings } = require('../controllers/adminController');
+const { getReferralSettings, getPublicStats } = require('../controllers/adminController');
 const { getPublicActivePlans } = require('../controllers/dataPlanController');
 const { getBusinessStatus } = require('../utils/topzaApi');
 
 router.get('/referral-settings', getReferralSettings);
 router.get('/dataplans', getPublicActivePlans);
+router.get('/stats', getPublicStats);
 
 router.get('/business-status', async (req, res) => {
   try {

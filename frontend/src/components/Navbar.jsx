@@ -18,10 +18,10 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-40 bg-white border-b-2 border-slate-200">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 w-64 flex-shrink-0">
             {showSidebarToggle && (
               <button
                 onClick={toggleSidebar}
@@ -31,21 +31,17 @@ export default function Navbar() {
                 <Menu size={24} className="text-slate-900" />
               </button>
             )}
-            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition flex-shrink-0">
+            <Link to="/" className="hidden lg:flex items-center gap-2 hover:opacity-80 transition flex-shrink-0">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                D
+              </div>
               <div>
-                <div className="font-black text-xl" style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #9333ea 50%, #ec4899 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textShadow: '0 4px 6px rgba(37, 99, 235, 0.3)',
-                  filter: 'drop-shadow(2px 2px 4px rgba(147, 51, 234, 0.2))',
-                  letterSpacing: '0.025em'
-                }}>Desnethub</div>
-                <div className="text-xs text-slate-600 font-semibold">DATA HUB</div>
+                <div className="font-bold text-sm text-slate-900">Desnethub</div>
               </div>
             </Link>
           </div>
+
+          <div className="flex-1" />
 
           <div className="flex items-center gap-4">
             {user ? (

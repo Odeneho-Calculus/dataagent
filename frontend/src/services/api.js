@@ -68,6 +68,7 @@ export const publicAPI = {
   getReferralSettings: () => api.get('/public/referral-settings'),
   getActivePlans: (limit = 10, offset = 0) => api.get(`/public/dataplans?limit=${limit}&offset=${offset}`),
   getBusinessStatus: () => api.get('/public/business-status'),
+  getPublicStats: () => api.get('/public/stats'),
 };
 
 export const admin = {
