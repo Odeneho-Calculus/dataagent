@@ -1,6 +1,16 @@
 const DataPlan = require('../models/DataPlan');
 const { fetchAllDataPlans } = require('../utils/topzaApi');
 
+const parseDataAmountInMB = (dataAmount) => {
+  if (!dataAmount || typeof dataAmount !== 'string') return null;
+  const trimmed = dataAmount.trim().toUpperCase();
+  const match = trimmed.match(/^(\d+(?:\.\d+)?)\s*(GB|MB)$/);
+  if (!match) return null;
+  const value = parseFloat(match[1]);
+  if (Number.isNaN(value)) return null;
+  return match[2] === 'GB' ? Math.round(value * 1024) : Math.round(value);
+};
+
 const normalizeNetwork = (network) => {
   const map = {
     'MTN': 'MTN',
@@ -28,28 +38,43 @@ exports.syncDataPlans = async (req, res) => {
       });
     }
 
+    console.log('[Sync] Sample plan from Topza API:', JSON.stringify(plans[0], null, 2));
+
     let synced = 0;
     let updated = 0;
+    let deleted = 0;
+
+    const keepKeys = new Set();
 
     for (const plan of plans) {
       const network = normalizeNetwork(plan.network);
       const costPrice = parseFloat(plan.price || 0);
+      const dataSize = plan.dataAmount || plan.dataSize || '';
+      const dataAmountInMB = Number(plan.dataAmountInMB) || parseDataAmountInMB(dataSize);
+      const inStock = plan.inStock !== undefined ? plan.inStock : true;
+      const isActive = plan.isActive !== undefined ? plan.isActive : true;
+      const discount = plan.discount !== undefined ? plan.discount : 0;
+      const apiPlanId = plan.id || plan._id;
+
+      console.log(`[Sync] Processing plan: network=${network}, planName=${plan.planName}, apiPlanId=${apiPlanId}, planId.id=${plan.id}, planId._id=${plan._id}`);
+
+      keepKeys.add(`${network}::${apiPlanId}`);
       
       const existingPlan = await DataPlan.findOne({
         network,
-        apiPlanId: plan.id || plan._id,
+        apiPlanId,
       });
 
       if (existingPlan) {
         // Always update non-price fields from API
         existingPlan.planName = plan.planName;
-        existingPlan.dataSize = plan.dataAmount;
-        existingPlan.dataAmountInMB = plan.dataAmountInMB;
+        existingPlan.dataSize = dataSize;
+        existingPlan.dataAmountInMB = dataAmountInMB;
         existingPlan.validity = plan.validity;
         existingPlan.category = plan.category;
-        existingPlan.inStock = plan.inStock;
-        existingPlan.isActive = plan.isActive;
-        existingPlan.discount = plan.discount;
+        existingPlan.inStock = inStock;
+        existingPlan.isActive = isActive;
+        existingPlan.discount = discount;
 
         // Keep existing status - don't override admin's choice
 
@@ -67,21 +92,31 @@ exports.syncDataPlans = async (req, res) => {
         await DataPlan.create({
           network,
           planName: plan.planName,
-          dataSize: plan.dataAmount,
-          dataAmountInMB: plan.dataAmountInMB,
+          dataSize,
+          dataAmountInMB,
           validity: plan.validity,
           category: plan.category,
-          apiPlanId: plan.id || plan._id,
+          apiPlanId,
           costPrice,
           sellingPrice: costPrice,
           originalCostPrice: costPrice,
-          inStock: plan.inStock,
-          isActive: plan.isActive,
-          discount: plan.discount,
+          inStock,
+          isActive,
+          discount,
           lastSyncedAt: new Date(),
         });
         synced++;
       }
+    }
+
+    const existingPlans = await DataPlan.find().select('_id network apiPlanId');
+    const deleteIds = existingPlans
+      .filter((plan) => !keepKeys.has(`${plan.network}::${plan.apiPlanId}`))
+      .map((plan) => plan._id);
+
+    if (deleteIds.length > 0) {
+      const deleteResult = await DataPlan.deleteMany({ _id: { $in: deleteIds } });
+      deleted = deleteResult.deletedCount || 0;
     }
 
     res.status(200).json({
@@ -90,6 +125,7 @@ exports.syncDataPlans = async (req, res) => {
       stats: {
         synced,
         updated,
+        deleted,
         total: synced + updated,
       },
     });

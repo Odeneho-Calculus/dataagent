@@ -22,7 +22,10 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      default: null,
+      required: true,
+      trim: true,
+      unique: true,
+      match: /^(233\d{9}|0\d{9})$/,
     },
     balance: {
       type: Number,

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Purchase = require('../models/Purchase');
@@ -217,12 +218,6 @@ exports.getTransactions = async (req, res) => {
         .sort({ createdAt: -1 });
 
       const formattedOrders = orders.map(order => {
-        console.log('[Admin Get Transactions] Data purchase order:', {
-          orderId: order._id,
-          amount: order.amount,
-          dataPlanId: order.dataPlanId,
-          status: order.status,
-        });
         return {
           _id: order._id,
           userId: order.userId,
@@ -341,6 +336,51 @@ exports.bulkDeleteTransactionsByStatus = async (req, res) => {
     });
   } catch (error) {
     console.error('bulkDeleteTransactionsByStatus error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.bulkDeleteTransactionsByIds = async (req, res) => {
+  try {
+    const { transactionIds } = req.body;
+
+    if (!Array.isArray(transactionIds) || transactionIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an array of transaction IDs',
+      });
+    }
+
+    // Convert string IDs to MongoDB ObjectIds
+    const objectIds = transactionIds.map(id => {
+      try {
+        return new mongoose.Types.ObjectId(id);
+      } catch (e) {
+        return id;
+      }
+    });
+
+    // Try to delete from both Order and Transaction collections
+    const transactionResult = await Transaction.deleteMany({
+      _id: { $in: objectIds }
+    });
+
+    const orderResult = await Order.deleteMany({
+      _id: { $in: objectIds }
+    });
+
+    const totalDeleted = transactionResult.deletedCount + orderResult.deletedCount;
+
+    res.status(200).json({
+      success: true,
+      message: `Deleted ${totalDeleted} items`,
+      deletedCount: totalDeleted,
+    });
+  } catch (error) {
+    console.error('bulkDeleteTransactionsByIds error:', error);
     res.status(500).json({
       success: false,
       message: error.message,

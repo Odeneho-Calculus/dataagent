@@ -24,6 +24,10 @@ export default function AdminTransactions() {
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [bulkDeleteStatus, setBulkDeleteStatus] = useState('pending');
   const [deleteLoading, setDeleteLoading] = useState(false);
+  
+  // New state for checkbox selection
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [selectAll, setSelectAll] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -34,6 +38,8 @@ export default function AdminTransactions() {
       if (response.success) {
         setTransactions(response.transactions || []);
         setTotalPages(response.pagination?.pages || 0);
+        setSelectedIds(new Set());
+        setSelectAll(false);
       } else {
         setError(response.message || 'Failed to fetch transactions');
       }
@@ -51,6 +57,54 @@ export default function AdminTransactions() {
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
+
+  const statusColors = {
+    successful: 'bg-green-100 text-green-700',
+    pending: 'bg-yellow-100 text-yellow-700',
+    failed: 'bg-red-100 text-red-700',
+    cancelled: 'bg-gray-100 text-gray-700',
+  };
+
+  const typeLabels = {
+    data_purchase: 'Data Purchase',
+    wallet_funding: 'Wallet Funding',
+    wallet_topup: 'Wallet Funding',
+    refund: 'Refund',
+    purchase_refund: 'Refund',
+    referral_bonus: 'Referral Bonus',
+  };
+
+  const filteredTransactions = transactions.filter(tx =>
+    !searchTerm || 
+    tx.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tx.userId?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tx.reference?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Handle individual checkbox selection
+  const handleCheckboxChange = (transactionId) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (newSelectedIds.has(transactionId)) {
+      newSelectedIds.delete(transactionId);
+    } else {
+      newSelectedIds.add(transactionId);
+    }
+    setSelectedIds(newSelectedIds);
+  };
+
+  // Handle select/deselect all
+  const handleSelectAllChange = () => {
+    if (selectAll) {
+      setSelectedIds(new Set());
+      setSelectAll(false);
+    } else {
+      const allIds = new Set(
+        filteredTransactions.map(tx => tx._id)
+      );
+      setSelectedIds(allIds);
+      setSelectAll(true);
+    }
+  };
 
   const showMessage = (msg, isError = false) => {
     if (isError) {
@@ -106,18 +160,25 @@ export default function AdminTransactions() {
   };
 
   const handleOpenBulkDelete = () => {
+    if (selectedIds.size === 0) {
+      showMessage('Please select at least one transaction', true);
+      return;
+    }
     setShowBulkDeleteConfirm(true);
   };
 
   const confirmBulkDelete = async () => {
     try {
       setDeleteLoading(true);
-      const response = await adminAPI.bulkDeleteTransactionsByStatus(bulkDeleteStatus);
+      const transactionIds = Array.from(selectedIds);
+      const response = await adminAPI.bulkDeleteTransactionsByIds(transactionIds);
 
       if (response.success) {
         setShowBulkDeleteConfirm(false);
+        setSelectedIds(new Set());
+        setSelectAll(false);
         await fetchTransactions();
-        showMessage(`Deleted ${response.deletedCount} transactions with status: ${bulkDeleteStatus}`);
+        showMessage(`Deleted ${response.deletedCount} transactions successfully`);
       } else {
         showMessage(response.message || 'Failed to delete transactions', true);
       }
@@ -127,29 +188,6 @@ export default function AdminTransactions() {
       setDeleteLoading(false);
     }
   };
-
-  const statusColors = {
-    successful: 'bg-green-100 text-green-700',
-    pending: 'bg-yellow-100 text-yellow-700',
-    failed: 'bg-red-100 text-red-700',
-    cancelled: 'bg-gray-100 text-gray-700',
-  };
-
-  const typeLabels = {
-    data_purchase: 'Data Purchase',
-    wallet_funding: 'Wallet Funding',
-    wallet_topup: 'Wallet Funding',
-    refund: 'Refund',
-    purchase_refund: 'Refund',
-    referral_bonus: 'Referral Bonus',
-  };
-
-  const filteredTransactions = transactions.filter(tx =>
-    !searchTerm || 
-    tx.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tx.userId?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tx.reference?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const successCount = filteredTransactions.filter(t => t.status === 'successful').length;
   const pendingCount = filteredTransactions.filter(t => t.status === 'pending').length;
@@ -335,6 +373,16 @@ export default function AdminTransactions() {
                     <table className="w-full">
                       <thead className="bg-gradient-to-r from-slate-100 to-blue-50 border-b-2 border-slate-200">
                         <tr>
+                          <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900 w-10">
+                            <input
+                              type="checkbox"
+                              checked={selectAll && filteredTransactions.length > 0}
+                              onChange={handleSelectAllChange}
+                              disabled={filteredTransactions.length === 0}
+                              className="w-4 h-4 cursor-pointer rounded border-slate-300"
+                              title="Select all transactions"
+                            />
+                          </th>
                           <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">User</th>
                           <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">Type</th>
                           <th className="px-4 sm:px-6 py-4 text-left text-xs sm:text-sm font-semibold text-slate-900">Amount</th>
@@ -347,8 +395,19 @@ export default function AdminTransactions() {
                         {filteredTransactions.map((tx) => (
                           <tr
                             key={tx._id}
-                            className="hover:bg-blue-50 transition"
+                            className={`hover:bg-blue-50 transition ${
+                              selectedIds.has(tx._id) ? 'bg-blue-100' : ''
+                            }`}
                           >
+                            <td className="px-4 sm:px-6 py-4 w-10">
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.has(tx._id)}
+                                onChange={() => handleCheckboxChange(tx._id)}
+                                className="w-4 h-4 cursor-pointer rounded border-slate-300"
+                                title="Select this transaction"
+                              />
+                            </td>
                             <td className="px-4 sm:px-6 py-4">
                               <div className="flex flex-col gap-1">
                                 <p className="text-sm font-semibold text-slate-900">{tx.userId?.name || 'Unknown'}</p>
@@ -483,22 +542,23 @@ export default function AdminTransactions() {
       <ConfirmDialog
         isOpen={showBulkDeleteConfirm}
         title="Bulk Delete Transactions"
-        message={`Delete all transactions with status: ${bulkDeleteStatus}? This cannot be undone.`}
-        confirmText="Delete All"
+        message={`Delete ${selectedIds.size} selected transaction${selectedIds.size !== 1 ? 's' : ''}? This action cannot be undone.`}
+        confirmText="Delete Selected"
         cancelText="Cancel"
         isDangerous={true}
         onConfirm={confirmBulkDelete}
         onCancel={() => setShowBulkDeleteConfirm(false)}
       />
 
-      {/* Bulk Delete Button - Floating */}
-      {!loading && filteredTransactions.length > 0 && (
+      {/* Bulk Delete Button - Floating Action Button */}
+      {!loading && selectedIds.size > 0 && (
         <button
           onClick={handleOpenBulkDelete}
-          className="fixed bottom-6 right-6 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+          className="fixed bottom-6 right-6 px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-full font-semibold hover:shadow-2xl transition-all flex items-center gap-2 shadow-lg"
         >
-          <Trash2 size={18} />
-          Bulk Delete
+          <Trash2 size={20} />
+          <span className="hidden sm:inline">Delete {selectedIds.size}</span>
+          <span className="sm:hidden">{selectedIds.size}</span>
         </button>
       )}
     </div>

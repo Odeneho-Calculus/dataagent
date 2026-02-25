@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSearchParams } from 'react-router-dom';
 import { ShoppingCart, CheckCircle, AlertCircle, Wifi } from 'lucide-react';
-import { dataplans } from '../services/api';
+import { publicAPI } from '../services/api';
 import PurchaseModal from '../components/PurchaseModal';
 import PurchaseVerificationModal from '../components/PurchaseVerificationModal';
 import UserLayout from '../components/UserLayout';
@@ -25,7 +25,7 @@ export default function BuyData() {
   const fetchDataPlans = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await dataplans.list('', '', 1, 500);
+      const response = await publicAPI.getActivePlans(500, 0);
       if (response.success) {
         const grouped = response.grouped || {};
         setBundles(grouped);
@@ -243,9 +243,11 @@ export default function BuyData() {
                         <div className="mb-2 sm:mb-3">
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <div>
-                              <p className="text-base sm:text-lg font-bold truncate text-slate-900">{bundle.dataSize}</p>
+                              <p className="text-base sm:text-lg font-bold truncate text-slate-900">
+                                {bundle.planName || bundle.dataSize}
+                              </p>
                               <p className="text-xs sm:text-sm truncate text-slate-600">
-                                {bundle.validity}
+                                {bundle.dataSize} • {bundle.validity}
                               </p>
                             </div>
                             {!bundle.inStock ? (

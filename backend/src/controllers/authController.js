@@ -12,10 +12,10 @@ exports.register = async (req, res) => {
   try {
     const { email, password, name, phone } = req.body;
 
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !phone) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Please provide email, password, and name' 
+        message: 'Please provide email, password, name, and phone' 
       });
     }
 
@@ -24,6 +24,14 @@ exports.register = async (req, res) => {
       return res.status(400).json({ 
         success: false, 
         message: 'Email already registered' 
+      });
+    }
+
+    const phoneExists = await User.findOne({ phone });
+    if (phoneExists) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number already in use'
       });
     }
 
@@ -51,6 +59,7 @@ exports.register = async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
+        phone: user.phone,
         balance: user.balance,
         referralCode: user.referralCode,
         role: user.role,
@@ -130,6 +139,7 @@ exports.login = async (req, res) => {
         id: user._id,
         email: user.email,
         name: user.name,
+        phone: user.phone,
         balance: user.balance,
         referralCode: user.referralCode,
         role: user.role,

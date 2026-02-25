@@ -29,10 +29,33 @@ router.get('/profile', protect, async (req, res) => {
 router.put('/profile', protect, async (req, res) => {
   try {
     const { name, phone } = req.body;
+    const updates = {};
+    if (typeof name === 'string' && name.trim()) {
+      updates.name = name.trim();
+    }
+    if (typeof phone === 'string' && phone.trim()) {
+      updates.phone = phone.trim();
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, message: 'No changes provided' });
+    }
+
+    if (updates.phone) {
+      const existingPhone = await User.findOne({
+        phone: updates.phone,
+        _id: { $ne: req.userId },
+      });
+
+      if (existingPhone) {
+        return res.status(409).json({ success: false, message: 'Phone number already in use' });
+      }
+    }
+
     const user = await User.findByIdAndUpdate(
       req.userId,
-      { name, phone },
-      { new: true }
+      updates,
+      { new: true, runValidators: true }
     );
     res.json({ 
       success: true, 

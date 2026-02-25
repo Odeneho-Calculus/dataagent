@@ -46,6 +46,9 @@ exports.buyDataBundle = async (req, res) => {
 
     console.log('[Buy Data Bundle] Plan prices:', {
       planId: plan._id,
+      apiPlanId: plan.apiPlanId,
+      planName: plan.planName,
+      network: plan.network,
       sellingPrice: plan.sellingPrice,
       costPrice: plan.costPrice,
       originalCostPrice: plan.originalCostPrice,
@@ -134,6 +137,42 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
     order.status = 'processing';
     await order.save();
 
+    console.log('[Wallet Payment] About to purchase - Plan details:', {
+      _id: plan._id,
+      apiPlanId: plan.apiPlanId,
+      network: plan.network,
+      planName: plan.planName,
+      dataSize: plan.dataSize,
+      sellingPrice: plan.sellingPrice,
+    });
+
+    // Verify the plan exists in Topza's API before attempting purchase
+    const { getDataPlanById } = require('../utils/topzaApi');
+    const planCheck = await getDataPlanById(plan.apiPlanId);
+    console.log('[Wallet Payment] Topza plan verification:', {
+      apiPlanId: plan.apiPlanId,
+      exists: planCheck.success,
+      planData: planCheck.data,
+      error: planCheck.error,
+    });
+
+    if (!planCheck.success) {
+      order.status = 'failed';
+      order.errorMessage = 'Data plan not found in provider system';
+      await order.save();
+
+      console.error('[Wallet Payment] Plan verification failed:', {
+        apiPlanId: plan.apiPlanId,
+        error: planCheck.error,
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Data plan not available from provider',
+        details: planCheck.error,
+      });
+    }
+
     const topzaResponse = await purchaseDataBundle(plan.apiPlanId, order.phoneNumber);
     console.log('[Wallet Payment] Purchase response:', {
       success: topzaResponse.success,
@@ -149,6 +188,7 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
 
       console.error('[Wallet Payment] Purchase failed:', {
         error: topzaResponse.error,
+        errorCode: topzaResponse.errorCode,
         dataPlanId: plan.apiPlanId,
         phoneNumber: order.phoneNumber,
       });
@@ -156,6 +196,7 @@ const handleWalletPayment = async (req, res, user, plan, order) => {
       return res.status(400).json({
         success: false,
         message: topzaResponse.error || 'Failed to process purchase with provider',
+        errorCode: topzaResponse.errorCode,
       });
     }
 
@@ -453,6 +494,50 @@ exports.verifyDataPurchase = async (req, res) => {
     await order.save();
 
     const plan = await DataPlan.findById(order.dataPlanId);
+    
+    console.log('[Verify Data Purchase] Plan details from DB:', {
+      _id: plan._id,
+      apiPlanId: plan.apiPlanId,
+      network: plan.network,
+      planName: plan.planName,
+      dataSize: plan.dataSize,
+      sellingPrice: plan.sellingPrice,
+    });
+
+    // Verify the plan exists in Topza's API before attempting purchase
+    const { getDataPlanById } = require('../utils/topzaApi');
+    const planCheck = await getDataPlanById(plan.apiPlanId);
+    console.log('[Verify Data Purchase] Topza plan verification:', {
+      apiPlanId: plan.apiPlanId,
+      exists: planCheck.success,
+      planData: planCheck.data,
+      error: planCheck.error,
+    });
+
+    if (!planCheck.success) {
+      order.status = 'failed';
+      order.errorMessage = 'Data plan not found in provider system';
+      
+      const transaction = await Transaction.findOne({ reference });
+      if (transaction) {
+        transaction.status = 'failed';
+        await transaction.save();
+      }
+      
+      await order.save();
+
+      console.error('[Verify Data Purchase] Plan verification failed:', {
+        apiPlanId: plan.apiPlanId,
+        error: planCheck.error,
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: 'Data plan not available from provider',
+        details: planCheck.error,
+      });
+    }
+
     const topzaResponse = await purchaseDataBundle(plan.apiPlanId, order.phoneNumber);
     
     console.log('[Verify Data Purchase] Purchase response:', {
@@ -476,6 +561,7 @@ exports.verifyDataPurchase = async (req, res) => {
 
       console.error('[Verify Data Purchase] Purchase failed:', {
         error: topzaResponse.error,
+        errorCode: topzaResponse.errorCode,
         dataPlanId: plan.apiPlanId,
         phoneNumber: order.phoneNumber,
       });
@@ -483,6 +569,7 @@ exports.verifyDataPurchase = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: topzaResponse.error || 'Failed to process purchase with provider',
+        errorCode: topzaResponse.errorCode,
       });
     }
 

@@ -6,6 +6,7 @@ import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,6 +27,16 @@ export default function Register() {
         return;
       }
 
+      if (!phone) {
+        setError('Please provide your phone number');
+        return;
+      }
+
+      if (!/^(233\d{9}|0\d{9})$/.test(phone)) {
+        setError('Phone number must be 233XXXXXXXXX or 0XXXXXXXXX');
+        return;
+      }
+
       if (password !== confirmPassword) {
         setError('Passwords do not match');
         return;
@@ -36,7 +47,7 @@ export default function Register() {
         return;
       }
 
-      const data = await register(email, password, name);
+      const data = await register(email, password, name, phone);
       if (data.user.role === 'admin') {
         navigate('/admin');
       } else {
@@ -91,6 +102,20 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                 placeholder="you@example.com"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                placeholder="0XXXXXXXXX or 233XXXXXXXXX"
                 disabled={loading}
               />
             </div>

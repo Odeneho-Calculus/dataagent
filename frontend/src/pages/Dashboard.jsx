@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Copy, TrendingUp, Clock, Zap } from 'lucide-react';
 import { CreditCardIcon, ChartBarIcon, UserGroupIcon } from '@heroicons/react/24/outline';
-import { dataplans, wallet, purchases, publicAPI } from '../services/api';
+import { wallet, purchases, publicAPI } from '../services/api';
 import UserLayout from '../components/UserLayout';
 
 export default function Dashboard() {
@@ -38,9 +38,9 @@ export default function Dashboard() {
 
   const fetchActiveBundles = async () => {
     try {
-      const response = await dataplans.list('', 'active');
+      const response = await publicAPI.getActivePlans(6, 0);
       if (response.success && response.plans) {
-        setDataBundles(response.plans.slice(0, 6));
+        setDataBundles(response.plans);
       }
     } catch (err) {
       console.error('Failed to fetch bundles:', err);
@@ -245,9 +245,11 @@ export default function Dashboard() {
                         <div className="mb-2 sm:mb-3">
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <div>
-                              <p className="text-base sm:text-lg font-bold truncate text-slate-900">{bundle.dataSize}</p>
+                              <p className="text-base sm:text-lg font-bold truncate text-slate-900">
+                                {bundle.planName || bundle.dataSize}
+                              </p>
                               <p className="text-xs sm:text-sm truncate text-slate-600">
-                                {bundle.validity}
+                                {bundle.dataSize} • {bundle.validity}
                               </p>
                             </div>
                             <span className="text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold">

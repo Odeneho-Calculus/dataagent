@@ -248,9 +248,11 @@ export default function Home() {
                 <div className="mb-2 sm:mb-3">
                   <div className="flex justify-between items-start gap-2 mb-2">
                     <div>
-                      <p className="text-base sm:text-lg font-bold truncate text-slate-900">{plan.dataSize}</p>
+                      <p className="text-base sm:text-lg font-bold truncate text-slate-900">
+                        {plan.planName || plan.dataSize}
+                      </p>
                       <p className="text-xs sm:text-sm truncate text-slate-600">
-                        {plan.validity}
+                        {plan.dataSize} • {plan.validity}
                       </p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r ${getNetworkColor(plan.network)} text-white font-bold`}>

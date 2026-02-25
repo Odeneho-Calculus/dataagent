@@ -1,19 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Phone, Copy, Shield, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
+import { user as userAPI } from '../services/api';
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
   });
+
+  useEffect(() => {
+    setFormData({
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+    });
+  }, [user]);
 
   const copyReferralCode = () => {
     if (user?.referralCode) {
@@ -28,9 +40,39 @@ export default function Profile() {
     navigate('/');
   };
 
-  const handleSaveChanges = () => {
-    alert('Profile updated successfully!');
-    setEditMode(false);
+  const handleSaveChanges = async () => {
+    setError('');
+    setSuccess('');
+
+    if (!formData.name || !formData.phone) {
+      setError('Name and phone number are required');
+      return;
+    }
+
+    if (!/^(233\d{9}|0\d{9})$/.test(formData.phone)) {
+      setError('Phone number must be 233XXXXXXXXX or 0XXXXXXXXX');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const data = await userAPI.updateProfile({
+        name: formData.name,
+        phone: formData.phone,
+      });
+      setFormData({
+        name: data.user?.name || formData.name,
+        email: data.user?.email || formData.email,
+        phone: data.user?.phone || formData.phone,
+      });
+      await refreshUser();
+      setSuccess('Profile updated successfully');
+      setEditMode(false);
+    } catch (err) {
+      setError(err.message || 'Profile update failed');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -53,6 +95,18 @@ export default function Profile() {
               </div>
 
               <div className="space-y-6">
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                    {error}
+                  </div>
+                )}
+
+                {success && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                    {success}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium mb-2 text-slate-900">Full Name</label>
                   <input
@@ -74,13 +128,12 @@ export default function Profile() {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    disabled={!editMode}
+                    disabled
                     className="w-full px-4 py-2 rounded-lg border-2 border-slate-200"
                     style={{
-                      backgroundColor: editMode ? '#f9fafb' : 'transparent',
+                      backgroundColor: 'transparent',
                       color: '#111827',
-                      opacity: editMode ? 1 : 0.6,
+                      opacity: 0.6,
                     }}
                   />
                 </div>
@@ -105,9 +158,10 @@ export default function Profile() {
                 {editMode && (
                   <button
                     onClick={handleSaveChanges}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                    disabled={saving}
+                    className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Save Changes
+                    {saving ? 'Saving...' : 'Save Changes'}
                   </button>
                 )}
               </div>

@@ -5,7 +5,7 @@ const TOPZA_API_KEY = process.env.TOPZA_API_KEY;
 
 const topzaApi = axios.create({
   baseURL: TOPZA_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
 });
 
 topzaApi.interceptors.request.use((config) => {
@@ -75,13 +75,21 @@ exports.fetchAllDataPlans = async () => {
     let page = 1;
     let totalPages = 1;
     const limit = 100;
+    const provider = process.env.TOPZA_PROVIDER;
+    const offerSlug = process.env.TOPZA_OFFER_SLUG;
 
     console.log('[Topza API] Starting data plans fetch with pagination');
 
     while (page <= totalPages) {
-      const response = await topzaApi.get('/v1/dataplans', {
-        params: { page, limit }
-      });
+      const params = { page, limit };
+      if (provider) {
+        params.provider = provider;
+      }
+      if (offerSlug) {
+        params.offerSlug = offerSlug;
+      }
+
+      const response = await topzaApi.get('/v1/dataplans', { params });
       
       if (response.data && response.data.success && Array.isArray(response.data.data)) {
         const plans = response.data.data;
@@ -114,12 +122,18 @@ exports.purchaseDataBundle = async (dataPlanId, phoneNumber) => {
   try {
     const requestBody = {
       dataPlanId,
-      quantity: 1,
       phoneNumber,
       paymentMethod: 'wallet',
     };
     
-    console.log('[Topza API] Sending purchase request:', requestBody);
+    console.log('[Topza API] Sending purchase request:', {
+      requestBody,
+      dataPlanId,
+      dataPlanIdType: typeof dataPlanId,
+      dataPlanIdLength: dataPlanId?.length,
+      phoneNumber,
+      paymentMethod: 'wallet',
+    });
     
     const response = await topzaApi.post('/v1/orders/buy', requestBody);
     
@@ -127,7 +141,8 @@ exports.purchaseDataBundle = async (dataPlanId, phoneNumber) => {
       statusCode: response.status,
       success: response.data?.success,
       message: response.data?.message,
-      data: response.data?.data,
+      dataPlanId: dataPlanId,
+      fullResponse: response.data,
     });
     
     if (response.data && response.data.success) {
@@ -152,12 +167,80 @@ exports.purchaseDataBundle = async (dataPlanId, phoneNumber) => {
     console.error('[Topza API] Error during purchase:', {
       message: error.message,
       status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      fullError: JSON.stringify(error.response?.data, null, 2),
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.config?.data,
+      },
+    });
+    
+    // Extract the most specific error message available
+    const errorData = error.response?.data;
+    let errorMessage = 'Purchase failed';
+    
+    if (errorData) {
+      // Check for detailed provider message first (most specific)
+      if (errorData.details?.providerMessage) {
+        errorMessage = errorData.details.providerMessage;
+      }
+      // Then check for general details message
+      else if (errorData.details?.originalMessage) {
+        errorMessage = errorData.details.originalMessage;
+      }
+      // Then check for error code-based message
+      else if (errorData.code === 'DUPLICATE_ORDER') {
+        errorMessage = 'A data purchase is already being processed for this phone number. Please wait a few minutes before trying again.';
+      }
+      // Finally use the general message
+      else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    }
+    
+    return {
+      success: false,
+      error: errorMessage,
+      errorCode: errorData?.code,
+    };
+  }
+};
+
+exports.getDataPlanById = async (planId) => {
+  try {
+    console.log('[Topza API] Fetching plan by ID:', planId);
+    
+    const response = await topzaApi.get(`/v1/dataplans/${planId}`);
+    
+    console.log('[Topza API] Plan fetch response:', {
+      statusCode: response.status,
+      success: response.data?.success,
+      plan: response.data?.data,
+    });
+    
+    if (response.data && response.data.success) {
+      return {
+        success: true,
+        data: response.data.data,
+      };
+    }
+    
+    return {
+      success: false,
+      error: response.data?.message || 'Plan not found',
+    };
+  } catch (error) {
+    console.error('[Topza API] Error fetching plan:', {
+      message: error.message,
+      status: error.response?.status,
       data: error.response?.data,
     });
     
     return {
       success: false,
-      error: error.response?.data?.message || error.message || 'Purchase failed',
+      error: error.response?.data?.message || error.message || 'Failed to fetch plan',
     };
   }
 };
@@ -399,13 +482,18 @@ exports.getBusinessStatus = async () => {
   } catch (error) {
     console.error('[Topza API] Error fetching business status:', {
       message: error.message,
+      code: error.code,
       status: error.response?.status,
       data: error.response?.data,
+      url: error.config?.url,
+      baseUrl: TOPZA_BASE_URL,
+      timeout: error.config?.timeout,
     });
-    
+
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'Failed to fetch business status',
+      details: error.response?.data || null,
     };
   }
 };
