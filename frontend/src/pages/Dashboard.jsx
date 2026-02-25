@@ -225,6 +225,12 @@ export default function Dashboard() {
               <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 border-2 border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
                   <h2 className="text-lg sm:text-xl lg:text-2xl font-bold truncate text-slate-900">Available Data Bundles</h2>
+                  <Link
+                    to="/buy-data"
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 font-semibold text-xs sm:text-sm hover:bg-blue-100 transition-all duration-300"
+                  >
+                    View All Plans
+                  </Link>
                 </div>
                 {loadingBundles ? (
                   <div className="text-center py-6 sm:py-8">
@@ -236,23 +242,23 @@ export default function Dashboard() {
                     <p className="text-xs sm:text-sm text-slate-600">No active data plans available</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
                     {dataBundles.map(bundle => (
                       <Link 
                         key={bundle._id} 
                         to={`/buy-data?planId=${bundle._id}&planName=${encodeURIComponent(bundle.planName)}&dataSize=${encodeURIComponent(bundle.dataSize)}&price=${bundle.sellingPrice}&network=${bundle.network}`}
                         className="p-3 sm:p-4 rounded-xl border-2 border-slate-200 cursor-pointer hover:border-blue-400 hover:shadow-lg bg-white transition-all duration-300">
                         <div className="mb-2 sm:mb-3">
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <div>
-                              <p className="text-base sm:text-lg font-bold truncate text-slate-900">
+                          <div className="flex justify-between items-start gap-2 mb-2 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm sm:text-lg font-bold truncate text-slate-900">
                                 {bundle.planName || bundle.dataSize}
                               </p>
                               <p className="text-xs sm:text-sm truncate text-slate-600">
                                 {bundle.dataSize} • {bundle.validity}
                               </p>
                             </div>
-                            <span className="text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold">
+                            <span className="hidden sm:inline-flex text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold">
                               {bundle.network}
                             </span>
                           </div>

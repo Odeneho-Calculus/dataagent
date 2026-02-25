@@ -229,7 +229,7 @@ export default function BuyData() {
                 {currentBundles.length === 0 ? (
                   <p className="text-slate-600 text-sm sm:text-base">No bundles available for this network</p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
                     {currentBundles.map(bundle => (
                       <div 
                         key={bundle._id} 
@@ -241,9 +241,9 @@ export default function BuyData() {
                         onClick={() => bundle.inStock && handlePurchaseClick(bundle)}
                       >
                         <div className="mb-2 sm:mb-3">
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <div>
-                              <p className="text-base sm:text-lg font-bold truncate text-slate-900">
+                          <div className="flex justify-between items-start gap-2 mb-2 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm sm:text-lg font-bold truncate text-slate-900">
                                 {bundle.planName || bundle.dataSize}
                               </p>
                               <p className="text-xs sm:text-sm truncate text-slate-600">
@@ -251,11 +251,11 @@ export default function BuyData() {
                               </p>
                             </div>
                             {!bundle.inStock ? (
-                              <span className="text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-red-100 text-red-600 font-semibold">
+                              <span className="hidden sm:inline-flex text-[10px] sm:text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-red-100 text-red-600 font-semibold">
                                 Out of Stock
                               </span>
                             ) : (
-                              <span className="text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold">
+                              <span className="hidden sm:inline-flex text-[10px] sm:text-xs px-2 py-1 rounded-lg whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold">
                                 {bundle.network}
                               </span>
                             )}
