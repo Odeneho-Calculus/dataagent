@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const TOPZA_BASE_URL = process.env.TOPZA_BASE_URL || 'https://topza.culustech.com/api';
+const TOPZA_BASE_URL = process.env.TOPZA_BASE_URL || 'https://api.topzagh.com/api';
 const TOPZA_API_KEY = process.env.TOPZA_API_KEY;
 
 const topzaApi = axios.create({
